@@ -119,28 +119,6 @@ export default {
       response: Responses.knockback(),
     },
     {
-      id: 'DelubrumSav Lord Fateful Words',
-      regex: /Fateful Words/,
-      // Paired with trigger id 'DelubrumSav Lord Labyrinthine Fate Collect'
-      // 97E: Wanderer's Fate, Pushes outward on Fateful Word cast
-      // 97F: Sacrifice's Fate, Pulls to middle on Fateful Word cast
-      // Labyrinthine Fate is cast and 1 second later debuffs are applied
-      // First set of debuffs go out 7.7 seconds before Fateful Word is cast
-      // Remaining set of debuffs go out 24.3 seconds before Fateful Word is cast
-      beforeSeconds: 4,
-      suppressSeconds: 1,
-      alertText: (data, _, output) => {
-        if (data.labyrinthineFate === '97F')
-          return output.getOut();
-        else if (data.labyrinthineFate === '97E')
-          return output.getIn();
-      },
-      outputStrings: {
-        getOut: Outputs.out,
-        getIn: Outputs.in,
-      },
-    },
-    {
       id: 'DelubrumSav Lord Thunderous Discharge',
       regex: /Thunderous Discharge/,
       // Cast in the timeline is 5 seconds, but there is an additional .5 second cast before damage
@@ -189,9 +167,13 @@ export default {
       netRegexJa: NetRegexes.startsUsing({ source: 'トリニティ・シーカー', id: '5AD3', capture: false }),
       condition: Conditions.caresAboutAOE(),
       response: Responses.aoe(),
-      // Clean up the swords here for consistency.  There's a raidwide between every set.
-      // TODO: we could also do this on starts casting First Mercy, which might be cleaner?
-      run: (data) => {
+    },
+    {
+      id: 'DelubrumSav Seeker Sword Cleanup',
+      // This is on First Mercy, which starts before the first ability.
+      netRegex: NetRegexes.startsUsing({ source: ['Trinity Seeker', 'Seeker Avatar'], id: '5B61' }),
+      run: (data, matches) => {
+        console.error(`Swords: cleanup`);
         delete data.seekerSwords;
         delete data.calledSeekerSwords;
         delete data.seekerFirstMercy;
@@ -210,7 +192,6 @@ export default {
         if (data.calledSeekerSwords)
           return;
 
-        // These are deleted in Verdant Tempest for consistency.
         data.seekerSwords = data.seekerSwords || [];
         data.seekerSwords.push(matches.count.toUpperCase());
         console.error(`Swords: GLOW: ${JSON.stringify(matches)}`);
@@ -245,10 +226,10 @@ export default {
             F7: [dir.south, dir.west],
             // Back right cleave.
             F8: [dir.west, dir.north],
-            // Back left cleave.
-            F9: [dir.north, dir.east],
             // Front left cleave.
-            FA: [dir.east, dir.south],
+            F9: [dir.east, dir.south],
+            // Back left cleave.
+            FA: [dir.north, dir.east],
           };
 
           const first = cleavetoSafeZones[cleaves[0]];
@@ -272,11 +253,11 @@ export default {
             // to make sure this doesn't get messed up.  This may mean that there is a
             // simpler left->right pattern that could be called, but we're ignoring it
             // for clarity of communication.
-            data.calledSeekerSwords = true;
             if (cardinal === dir.north) {
               data.calledSeekerSwords = true;
               return output.double({ dir1: output.out(), dir2: output.in() });
             } else if (cardinal === dir.south) {
+              data.calledSeekerSwords = true;
               return output.double({ dir1: output.in(), dir2: output.out() });
             }
 
@@ -313,19 +294,19 @@ export default {
         // Try to call out something the best we can.
         if (isClone) {
           const cardinal = (4 + intersect[0] - pos + heading) % 4;
-          data.calledSeekerSwords = true;
 
           const cleaveToDirection = {
             // Front right cleave.
             F7: output.in(),
             // Back right cleave.
             F8: output.out(),
-            // Back left cleave.
-            F9: output.out(),
             // Front left cleave.
-            FA: output.in(),
+            F9: output.in(),
+            // Back left cleave.
+            FA: output.out(),
           };
 
+          data.calledSeekerSwords = true;
           const dirs = cleaves.map((id) => cleaveToDirection[id]);
           return output.quadruple({ dir1: dirs[0], dir2: dirs[1], dir3: dirs[2], dir4: dirs[3] });
         }
@@ -335,10 +316,10 @@ export default {
           F7: output.dirSW(),
           // Back right cleave.
           F8: output.dirNW(),
-          // Back left cleave.
-          F9: output.dirNE(),
           // Front left cleave.
-          FA: output.dirSE(),
+          F9: output.dirSE(),
+          // Back left cleave.
+          FA: output.dirNE(),
         };
 
         data.calledSeekerSwords = true;
@@ -2077,11 +2058,56 @@ export default {
     },
     {
       id: 'DelubrumSav Lord Labyrinthine Fate Collect',
-      // Result used by timelineTrigger id 'DelubrumSav Lord Fateful Words'
+      // 97E: Wanderer's Fate, Pushes outward on Fateful Word cast
+      // 97F: Sacrifice's Fate, Pulls to middle on Fateful Word cast
       netRegex: NetRegexes.gainsEffect({ effectId: '97[EF]' }),
       condition: Conditions.targetIsYou(),
-      run: (data, matches) => {
+      preRun: (data, matches) => {
         data.labyrinthineFate = matches.effectId.toUpperCase();
+      },
+      infoText: (data, _, output) => {
+        // The first time this happens, there is ~2.5 seconds between debuff application
+        // and the start of the cast to execute that debuff.  Be less noisy on the first.
+        if (!data.seenLabyrinthineFate)
+          return;
+
+        if (data.labyrinthineFate === '97F')
+          return output.getOutLater();
+        else if (data.labyrinthineFate === '97E')
+          return output.getInLater();
+      },
+      run: (data) => data.seenLabyrinthineFate = true,
+      outputStrings: {
+        getOutLater: {
+          en: '(sacrifice out, for later)',
+        },
+        getInLater: {
+          en: '(wanderer in, for later)',
+        },
+      },
+    },
+    {
+      id: 'DelubrumSav Lord Fateful Words',
+      netRegex: NetRegexes.startsUsing({ source: 'Stygimoloch Lord', id: '57C9', capture: false }),
+      netRegexDe: NetRegexes.startsUsing({ source: 'Anführer-Stygimoloch', id: '57C9', capture: false }),
+      netRegexFr: NetRegexes.startsUsing({ source: 'Seigneur Stygimoloch', id: '57C9', capture: false }),
+      netRegexJa: NetRegexes.startsUsing({ source: 'スティギモロク・ロード', id: '57C9', capture: false }),
+      // 97E: Wanderer's Fate, Pushes outward on Fateful Word cast
+      // 97F: Sacrifice's Fate, Pulls to middle on Fateful Word cast
+      // Labyrinthine Fate is cast and 1 second later debuffs are applied
+      // First set of debuffs go out 7.7 seconds before Fateful Word is cast
+      // Remaining set of debuffs go out 24.3 seconds before Fateful Word is cast
+      alertText: (data, _, output) => {
+        if (data.labyrinthineFate === '97F')
+          return output.getOut();
+        else if (data.labyrinthineFate === '97E')
+          return output.getIn();
+      },
+      // In case you die and don't get next debuff, clean this up so it doesn't call again.
+      run: (data) => delete data.labyrinthineFate,
+      outputStrings: {
+        getOut: Outputs.out,
+        getIn: Outputs.in,
       },
     },
     {
@@ -2307,7 +2333,9 @@ export default {
       netRegexFr: NetRegexes.startsUsing({ source: 'Garde-La-Reine', id: '59EC', capture: false }),
       netRegexJa: NetRegexes.startsUsing({ source: 'セイブ・ザ・クイーン', id: '59EC', capture: false }),
       run: (data) => {
-
+        console.log(`CHESS DEBUG: cleanup`);
+        delete data.chessMatches;
+        delete data.chessCombatants;
       },
     },
     {
@@ -2322,6 +2350,7 @@ export default {
         return data.chessMatches.length === 4;
       },
       promise: async (data) => {
+        console.log(`CHESS DEBUG: running promise`);
         const ids = data.chessMatches.map((matches) => parseInt(matches.targetId, 16));
         const chessData = await window.callOverlayHandler({
           call: 'getCombatants',
@@ -2354,6 +2383,7 @@ export default {
         const idToSteps = {};
         for (const matches in data.chessMatches)
           idToSteps[parseInt(matches.targetId, 16)] = vfxToSteps[matches.count];
+        console.log(`CHESS DEBUG: idToSteps: ${idToSteps}`);
 
         // +x = east, +y = south
         const findCol = (c) => Math.round((c.PosX - queenCenterX) / 10);
