@@ -47,7 +47,7 @@ const basePath = () => path.dirname(path.dirname(fileURLToPath(import.meta.url))
 // Utility function to walk directories
 const walkDir = (dir, callback) => {
   if (fs.statSync(dir).isFile()) {
-    callback(path.posix.join(dir));
+    callback(path.join(dir));
     return;
   }
   fs.readdirSync(dir).forEach((f) => {
