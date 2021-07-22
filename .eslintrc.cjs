@@ -26,7 +26,6 @@ const settings = {
     'plugin/',
     'publish/',
     'resources/lib/',
-    'ui/dps/rdmty/',
   ],
   'parserOptions': {
     'ecmaVersion': 2020,
@@ -99,6 +98,12 @@ const rules = {
         'parameters': 2,
       },
       'ignoreComments': false,
+      'ignoredNodes': [
+        // The indent rule does a poor job with TypeScript type declarations, so disable.
+        'TSIntersectionType *',
+        'TSTypeAliasDeclaration *',
+        'TSUnionType *',
+      ],
       'ObjectExpression': 1,
     },
   ],
@@ -218,6 +223,7 @@ const tsOverrides = {
       },
     ],
     '@typescript-eslint/explicit-module-boundary-types': ['error', { 'allowHigherOrderFunctions': false }],
+    '@typescript-eslint/indent': rules.indent,
     '@typescript-eslint/member-delimiter-style': ['error', {
       'multiline': {
         'delimiter': 'semi',
@@ -230,10 +236,15 @@ const tsOverrides = {
     }],
     '@typescript-eslint/method-signature-style': ['error', 'property'],
     '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-invalid-this': 'error',
     '@typescript-eslint/no-non-null-assertion': 'error',
+    '@typescript-eslint/no-unsafe-argument': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_\\w+' }],
     '@typescript-eslint/object-curly-spacing': ['error', 'always'],
     'func-style': ['error', 'expression', { 'allowArrowFunctions': true }],
+    'import/order': ['error', { 'alphabetize': { 'caseInsensitive': true, 'order': 'asc' }, 'newlines-between': 'always' }],
+    'indent': 'off',
+    'no-invalid-this': 'off',
     'object-shorthand': ['error', 'consistent'],
   },
 };
@@ -260,12 +271,30 @@ const overrides = [
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       // Only meant to be used for `output` parameters!
       '@typescript-eslint/no-non-null-assertion': 'off',
-      'no-unused-vars': ['error', { 'args': 'all', 'argsIgnorePattern': '^_\\w+' }],
       'prefer-arrow/prefer-arrow-functions': 'warn',
-      'rulesdir/cactbot-matches-type-references': 'error',
       'rulesdir/cactbot-output-strings': 'error',
       'rulesdir/cactbot-response-default-severities': 'error',
       'rulesdir/cactbot-timeline-triggers': 'error',
+    },
+  },
+  {
+    'files': ['**/oopsyraidsy/data/**/*.js', '**/raidboss/data/**/*.js'],
+    'rules': {
+      'no-unused-vars': ['error', { 'args': 'all', 'argsIgnorePattern': '^_\\w+' }],
+    },
+  },
+  {
+    'files': ['**/raidboss/data/**/*'],
+    'rules': {
+      'rulesdir/cactbot-trigger-property-order': ['error', { 'module': 'raidboss' }],
+      'rulesdir/cactbot-triggerset-property-order': ['error', { 'module': 'raidboss' }],
+    },
+  },
+  {
+    'files': ['**/oopsyraidsy/data/**/*'],
+    'rules': {
+      'rulesdir/cactbot-trigger-property-order': ['error', { 'module': 'oopsyraidsy' }],
+      'rulesdir/cactbot-triggerset-property-order': ['error', { 'module': 'oopsyraidsy' }],
     },
   },
 ];

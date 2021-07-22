@@ -1,4 +1,6 @@
 import { UnreachableCode } from '../../../../resources/not_reached';
+import { Job } from '../../../../types/job';
+
 import CombatantState from './CombatantState';
 
 export default class Combatant {
@@ -8,7 +10,7 @@ export default class Combatant {
   states: { [timestamp: number]: CombatantState } = {};
   significantStates: number[] = [];
   latestTimestamp = -1;
-  job?: string;
+  job?: Job;
   jobId?: number;
   level?: number;
 

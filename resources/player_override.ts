@@ -1,6 +1,6 @@
-import { Party, PlayerChangedRet } from 'types/event';
-import { Lang } from 'resources/languages';
-import { Job } from 'types/job';
+import { Lang } from '../resources/languages';
+import { Party, PlayerChangedRet } from '../types/event';
+import { Job } from '../types/job';
 
 import { addOverlayListener } from './overlay_plugin_api';
 import Util from './util';
@@ -15,11 +15,12 @@ import Util from './util';
 // jobs remotely due to gauge data being local and many bits of information
 // loaded from memory.
 
-type PlayerChangedDetail = { detail: PlayerChangedRet };
+export type PlayerChangedDetail = { detail: PlayerChangedRet };
 type PlayerChangedFunc = (e: PlayerChangedDetail) => void;
 
-export const addPlayerChangedOverrideListener = (playerName: string,
-    func: PlayerChangedFunc): void => {
+// @TODO: Swap the order of these arguments, make playerName optional instead
+export const addPlayerChangedOverrideListener = (func: PlayerChangedFunc,
+    playerName?: string): void => {
   if (!func)
     return;
 

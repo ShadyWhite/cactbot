@@ -362,6 +362,10 @@ class DoNothingFuncProxy {
   }
 }
 
+const makeLink = (href) => {
+  return `<a href="${href}" target="_blank">${href}</a>`;
+};
+
 class RaidbossConfigurator {
   constructor(cactbotConfigurator) {
     this.base = cactbotConfigurator;
@@ -419,7 +423,8 @@ class RaidbossConfigurator {
           continue;
         const partDiv = document.createElement('div');
         partDiv.classList.add('trigger-file-header-part');
-        partDiv.innerText = parts[i];
+        // Use innerHTML here because of <Emphasis>Whorleater</Emphasis>.
+        partDiv.innerHTML = parts[i];
         headerDiv.appendChild(partDiv);
       }
 
@@ -554,7 +559,10 @@ class RaidbossConfigurator {
           div.appendChild(input);
           input.type = 'text';
           input.step = 'any';
-          input.placeholder = this.base.translate(kMiscTranslations.valueDefault);
+          if (typeof trig.durationSeconds === 'number')
+            input.placeholder = `${trig.durationSeconds}`;
+          else
+            input.placeholder = this.base.translate(kMiscTranslations.valueDefault);
           input.value = this.base.getOption('raidboss', 'triggers', trig.id, optionKey, '');
           const setFunc = () => {
             const val = validDurationOrUndefined(input.value) || '';
@@ -984,6 +992,27 @@ const templateOptions = {
     }
   },
   options: [
+    {
+      id: 'Coverage',
+      name: {
+        en: 'Supported content (latest version)',
+        de: 'Unterstützte Inhalte (aktuellste Version)',
+        fr: 'Contenu supporté (dernière version)',
+        ja: '対応コンテンツ一覧 (最新バージョン)',
+        cn: '支持副本一览 (含未发布更新)',
+        ko: '지원하는 컨텐츠 (릴리즈버전보다 최신)',
+      },
+      type: 'html',
+      html: {
+        // TODO: it'd be nice if OverlayPlugin could open links on the system outside of ACT.
+        en: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=en'),
+        de: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=de'),
+        fr: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=fr'),
+        ja: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=ja'),
+        cn: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=cn'),
+        ko: makeLink('https://quisquous.github.io/cactbot/util/coverage/coverage.html?lang=ko'),
+      },
+    },
     {
       id: 'Debug',
       name: {

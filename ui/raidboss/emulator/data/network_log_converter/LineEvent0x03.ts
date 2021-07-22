@@ -1,6 +1,8 @@
-import LineEvent, { LineEventJobLevel, LineEventSource } from './LineEvent';
-import EmulatorCommon from '../../EmulatorCommon';
 import Util from '../../../../../resources/util';
+import { Job } from '../../../../../types/job';
+import EmulatorCommon from '../../EmulatorCommon';
+
+import LineEvent, { LineEventJobLevel, LineEventSource } from './LineEvent';
 import LogRepository from './LogRepository';
 
 const fields = {
@@ -31,7 +33,7 @@ export class LineEvent0x03 extends LineEvent implements LineEventSource, LineEve
   public readonly name: string;
   public readonly jobIdHex: string;
   public readonly jobId: number;
-  public readonly job: string;
+  public readonly job: Job;
   public readonly levelString: string;
   public readonly level: number;
   public readonly ownerId: string;
@@ -66,7 +68,7 @@ export class LineEvent0x03 extends LineEvent implements LineEventSource, LineEve
     this.jobId = parseInt(this.jobIdHex, 16);
     this.job = Util.jobEnumToJob(this.jobId);
     this.levelString = parts[fields.levelString] ?? '';
-    this.level = parseFloat(this.levelString);
+    this.level = parseInt(this.levelString, 16);
     this.ownerId = parts[fields.ownerId]?.toUpperCase() ?? '';
     this.worldId = parts[fields.worldId] ?? '';
     this.worldName = parts[fields.worldName] ?? '';

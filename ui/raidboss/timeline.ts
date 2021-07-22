@@ -1,12 +1,16 @@
-import { commonReplacement } from './common_replacement';
-import Regexes, { Regex, Network6dParams } from '../../resources/regexes';
-import { LocaleRegex } from '../../resources/translations';
+import { Lang } from '../../resources/languages';
+import NetRegexes from '../../resources/netregexes';
 import { UnreachableCode } from '../../resources/not_reached';
+import Regexes from '../../resources/regexes';
+import TimerBar from '../../resources/timerbar';
+import { LocaleRegex } from '../../resources/translations';
+import { LogEvent } from '../../types/event';
+import { CactbotBaseRegExp } from '../../types/net_trigger';
+import { LooseTimelineTrigger, TriggerAutoConfig } from '../../types/trigger';
+
+import { commonReplacement } from './common_replacement';
+import { PopupTextGenerator } from './popup-text';
 import { RaidbossOptions } from './raidboss_options';
-import { Lang } from 'resources/languages';
-import TimerBar from 'resources/timerbar';
-import { LogEvent } from 'types/event';
-import { LooseTimelineTrigger, TriggerAutoConfig } from 'types/trigger';
 
 const kBig = 1000000000; // Something bigger than any fight length in seconds.
 
@@ -70,13 +74,14 @@ const activeText = {
   ko: '시전중:',
 };
 
-type Replacement = {
-  locale: string;
-  replaceSync: { [key: string]: string };
-  replaceText: { [key: string]: string };
+export type TimelineReplacement = {
+  locale: Lang;
+  missingTranslations?: boolean;
+  replaceSync?: { [regexString: string]: string };
+  replaceText?: { [timelineText: string]: string };
 };
 
-type Style = {
+export type TimelineStyle = {
   style: { [key: string]: string };
   regex: RegExp;
 }
@@ -129,11 +134,6 @@ type ParsedText = ParsedPopupText | ParsedTriggerText;
 
 type Text = ParsedText & { time: number };
 
-type AddTimerCallback = (fightNow: number, durationEvent: Event, channeling: boolean) => void;
-type PopupTextCallback = (text: string) => void;
-type TriggerCallback =
-    (trigger: LooseTimelineTrigger, matches: RegExpExecArray | null) => void;
-
 // TODO: Duplicated in 'jobs'
 const computeBackgroundColorFrom = (element: HTMLElement, classList: string): string => {
   const div = document.createElement('div');
@@ -152,7 +152,7 @@ export class Timeline {
   private options: RaidbossOptions;
   private perTriggerAutoConfig: { [triggerId: string]: TriggerAutoConfig };
   private activeText: string;
-  private replacements: Replacement[];
+  private replacements: TimelineReplacement[];
 
   private ignores: { [ignoreId: string]: boolean };
   public events: Event[];
@@ -170,19 +170,12 @@ export class Timeline {
   private nextSyncStart = 0;
   private nextSyncEnd = 0;
 
-  private addTimerCallback: AddTimerCallback | null = null;
-  private removeTimerCallback: ((e: Event, expired: boolean) => void) | null = null;
-  private showInfoTextCallback: PopupTextCallback | null = null;
-  private showAlertTextCallback: PopupTextCallback | null = null;
-  private showAlarmTextCallback: PopupTextCallback | null = null;
-  private speakTTSCallback: PopupTextCallback | null = null;
-  private triggerCallback: TriggerCallback | null = null;
-  private syncTimeCallback: ((fightNow: number, running: boolean) => void) | null = null;
-
   private updateTimer = 0;
 
-  constructor(text: string, replacements: Replacement[], triggers: LooseTimelineTrigger[],
-      styles: Style[], options: RaidbossOptions) {
+  public ui?: TimelineUI;
+
+  constructor(text: string, replacements: TimelineReplacement[], triggers: LooseTimelineTrigger[],
+      styles: TimelineStyle[], options: RaidbossOptions) {
     this.options = options || {};
     this.perTriggerAutoConfig = this.options['PerTriggerAutoConfig'] || {};
     this.replacements = replacements;
@@ -217,9 +210,10 @@ export class Timeline {
     for (const r of this.replacements) {
       if (r.locale && r.locale !== replaceLang)
         continue;
-      if (!r[replaceKey])
+      const reps = r[replaceKey];
+      if (!reps)
         continue;
-      for (const [key, value] of Object.entries(r[replaceKey]))
+      for (const [key, value] of Object.entries(reps))
         text = text.replace(Regexes.parse(key), value);
     }
     // Common Replacements
@@ -267,7 +261,7 @@ export class Timeline {
     ].map((x) => Regexes.parse(x));
   }
 
-  private LoadFile(text: string, triggers: LooseTimelineTrigger[], styles: Style[]): void {
+  private LoadFile(text: string, triggers: LooseTimelineTrigger[], styles: TimelineStyle[]): void {
     this.events = [];
     this.syncStarts = [];
     this.syncEnds = [];
@@ -538,8 +532,7 @@ export class Timeline {
     this._ClearTimers();
     this._CancelUpdate();
 
-    if (this.syncTimeCallback)
-      this.syncTimeCallback(fightNow, false);
+    this.ui?.OnSyncTime(fightNow, false);
   }
 
   protected SyncTo(fightNow: number, currentTime: number): void {
@@ -574,8 +567,7 @@ export class Timeline {
     this._CancelUpdate();
     this._ScheduleUpdate(fightNow);
 
-    if (this.syncTimeCallback)
-      this.syncTimeCallback(fightNow, true);
+    this.ui?.OnSyncTime(fightNow, true);
   }
 
   private _CollectActiveSyncs(fightNow: number): void {
@@ -619,10 +611,8 @@ export class Timeline {
   }
 
   private _ClearTimers(): void {
-    if (this.removeTimerCallback) {
-      for (const activeEvent of this.activeEvents)
-        this.removeTimerCallback(activeEvent, false);
-    }
+    for (const activeEvent of this.activeEvents)
+      this.ui?.OnRemoveTimer(activeEvent, false);
     this.activeEvents = [];
   }
 
@@ -633,8 +623,7 @@ export class Timeline {
         durationEvents.push(event);
         continue;
       }
-      if (this.removeTimerCallback)
-        this.removeTimerCallback(event, false);
+      this.ui?.OnRemoveTimer(event, false, true);
     }
 
     this.activeEvents = durationEvents;
@@ -643,8 +632,7 @@ export class Timeline {
   private _RemoveExpiredTimers(fightNow: number): void {
     let activeEvent = this.activeEvents[0];
     while (this.activeEvents.length && activeEvent && activeEvent.time <= fightNow) {
-      if (this.removeTimerCallback)
-        this.removeTimerCallback(activeEvent, true);
+      this.ui?.OnRemoveTimer(activeEvent, true);
       this.activeEvents.splice(0, 1);
       activeEvent = this.activeEvents[0];
     }
@@ -665,8 +653,7 @@ export class Timeline {
         };
         events.push(durationEvent);
         this.activeEvents.splice(i, 1);
-        if (this.addTimerCallback)
-          this.addTimerCallback(fightNow, durationEvent, true);
+        this.ui?.OnAddTimer(fightNow, durationEvent, true);
         --i;
       }
     }
@@ -687,36 +674,29 @@ export class Timeline {
         break;
       if (fightNow < e.time && !(e.name in this.ignores)) {
         this.activeEvents.push(e);
-        if (this.addTimerCallback)
-          this.addTimerCallback(fightNow, e, false);
+        this.ui?.OnAddTimer(fightNow, e, false);
       }
       ++this.nextEvent;
     }
   }
 
-  private _AddPassedTexts(fightNow: number): void {
+  private _AddPassedTexts(fightNow: number, currentTime: number): void {
     while (this.nextText < this.texts.length) {
       const t = this.texts[this.nextText];
       if (!t)
         break;
       if (t.time > fightNow)
         break;
-      if (t.type === 'info') {
-        if (this.showInfoTextCallback)
-          this.showInfoTextCallback(t.text);
-      } else if (t.type === 'alert') {
-        if (this.showAlertTextCallback)
-          this.showAlertTextCallback(t.text);
-      } else if (t.type === 'alarm') {
-        if (this.showAlarmTextCallback)
-          this.showAlarmTextCallback(t.text);
-      } else if (t.type === 'tts') {
-        if (this.speakTTSCallback)
-          this.speakTTSCallback(t.text);
-      } else if (t.type === 'trigger') {
-        if (this.triggerCallback)
-          this.triggerCallback(t.trigger, t.matches);
-      }
+      if (t.type === 'info')
+        this.ui?.OnShowInfoText(t.text, currentTime);
+      else if (t.type === 'alert')
+        this.ui?.OnShowAlertText(t.text, currentTime);
+      else if (t.type === 'alarm')
+        this.ui?.OnShowAlarmText(t.text, currentTime);
+      else if (t.type === 'tts')
+        this.ui?.OnSpeakTTS(t.text, currentTime);
+      else if (t.type === 'trigger')
+        this.ui?.OnTrigger(t.trigger, t.matches, currentTime);
       ++this.nextText;
     }
   }
@@ -796,7 +776,7 @@ export class Timeline {
     // This is the number of seconds into the fight (subtracting Dates gives milliseconds).
     const fightNow = (currentTime - this.timebase) / 1000;
     // Send text events now or they'd be skipped by _AdvanceTimeTo().
-    this._AddPassedTexts(fightNow);
+    this._AddPassedTexts(fightNow, currentTime);
     this._AdvanceTimeTo(fightNow);
     this._CollectActiveSyncs(fightNow);
 
@@ -805,39 +785,6 @@ export class Timeline {
     this._AddUpcomingTimers(fightNow);
     this._ScheduleUpdate(fightNow);
   }
-
-  public SetAddTimer(c: AddTimerCallback | null): void {
-    this.addTimerCallback = c;
-  }
-  public SetRemoveTimer(c: ((e: Event, expired: boolean) => void) | null): void {
-    this.removeTimerCallback = c;
-  }
-  public SetShowInfoText(c: PopupTextCallback | null): void {
-    this.showInfoTextCallback = c;
-  }
-  public SetShowAlertText(c: PopupTextCallback | null): void {
-    this.showAlertTextCallback = c;
-  }
-  public SetShowAlarmText(c: PopupTextCallback | null): void {
-    this.showAlarmTextCallback = c;
-  }
-  public SetSpeakTTS(c: PopupTextCallback | null): void {
-    this.speakTTSCallback = c;
-  }
-  public SetTrigger(c: TriggerCallback | null): void {
-    this.triggerCallback = c;
-  }
-  public SetSyncTime(c: ((fightNow: number, running: boolean) => void) | null): void {
-    this.syncTimeCallback = c;
-  }
-}
-
-interface PopupText {
-  Info: PopupTextCallback;
-  Alert: PopupTextCallback;
-  Alarm: PopupTextCallback;
-  TTS: PopupTextCallback;
-  Trigger: TriggerCallback;
 }
 
 export class TimelineUI {
@@ -855,11 +802,11 @@ export class TimelineUI {
   private debugElement: HTMLElement | null = null;
   private debugFightTimer: TimerBar | null = null;
 
-  private timeline: Timeline | null = null;
+  protected timeline: Timeline | null = null;
 
-  private popupText?: PopupText;
+  private popupText?: PopupTextGenerator;
 
-  constructor(private options: RaidbossOptions) {
+  constructor(protected options: RaidbossOptions) {
     this.options = options;
     this.init = false;
     this.lang = this.options.TimelineLanguage || this.options.ParserLanguage || 'en';
@@ -924,21 +871,14 @@ export class TimelineUI {
       this.debugElement = document.createElement('div');
   }
 
-  public SetPopupTextInterface(popupText: PopupText): void {
+  public SetPopupTextInterface(popupText: PopupTextGenerator): void {
     this.popupText = popupText;
   }
 
   public SetTimeline(timeline: Timeline | null): void {
     this.Init();
     if (this.timeline) {
-      this.timeline.SetAddTimer(null);
-      this.timeline.SetRemoveTimer(null);
-      this.timeline.SetShowInfoText(null);
-      this.timeline.SetShowAlertText(null);
-      this.timeline.SetShowAlarmText(null);
-      this.timeline.SetSpeakTTS(null);
-      this.timeline.SetTrigger(null);
-      this.timeline.SetSyncTime(null);
+      delete this.timeline.ui;
       while (this.timerlist && this.timerlist.lastChild)
         this.timerlist.removeChild(this.timerlist.lastChild);
       if (this.debugElement)
@@ -948,25 +888,17 @@ export class TimelineUI {
     }
 
     this.timeline = timeline;
-    if (this.timeline) {
-      this.timeline.SetAddTimer(this.OnAddTimer.bind(this));
-      this.timeline.SetRemoveTimer(this.OnRemoveTimer.bind(this));
-      this.timeline.SetShowInfoText(this.OnShowInfoText.bind(this));
-      this.timeline.SetShowAlertText(this.OnShowAlertText.bind(this));
-      this.timeline.SetShowAlarmText(this.OnShowAlarmText.bind(this));
-      this.timeline.SetSpeakTTS(this.OnSpeakTTS.bind(this));
-      this.timeline.SetTrigger(this.OnTrigger.bind(this));
-      this.timeline.SetSyncTime(this.OnSyncTime.bind(this));
-    }
+    if (this.timeline)
+      this.timeline.ui = this;
   }
 
-  protected OnAddTimer(fightNow: number, e: Event, channeling: boolean): void {
+  public OnAddTimer(fightNow: number, e: Event, channeling: boolean): void {
     const div = document.createElement('div');
     const bar = document.createElement('timer-bar');
     div.classList.add('timer-bar');
     div.appendChild(bar);
-    bar.duration = `${channeling ? e.time - fightNow : this.options.ShowTimerBarsAtSeconds}`;
-    bar.value = `${e.time - fightNow}`;
+    bar.duration = channeling ? e.time - fightNow : this.options.ShowTimerBarsAtSeconds;
+    bar.value = e.time - fightNow;
     bar.righttext = 'remain';
     bar.lefttext = e.text;
     bar.toward = 'right';
@@ -1002,14 +934,14 @@ export class TimelineUI {
     }
   }
 
-  private OnTimerExpiresSoon(id: number): void {
+  public OnTimerExpiresSoon(id: number): void {
     const bar = this.activeBars[id];
     if (bar)
       bar.fg = this.barExpiresSoonColor;
   }
 
-  protected OnRemoveTimer(e: Event, expired: boolean): void {
-    if (expired && this.options.KeepExpiredTimerBarsForSeconds) {
+  public OnRemoveTimer(e: Event, expired: boolean, force = false): void {
+    if (!force && expired && this.options.KeepExpiredTimerBarsForSeconds) {
       this.expireTimers[e.id] = window.setTimeout(
           this.OnRemoveTimer.bind(this, e, false),
           this.options.KeepExpiredTimerBarsForSeconds * 1000);
@@ -1032,7 +964,9 @@ export class TimelineUI {
       div?.parentNode?.removeChild(div);
       delete this.activeBars[e.id];
     };
-    element.classList.add('animate-timer-bar-removed');
+
+    if (!force)
+      element.classList.add('animate-timer-bar-removed');
     if (window.getComputedStyle(element).animationName !== 'none') {
       // Wait for animation to finish
       element.addEventListener('animationend', removeBar);
@@ -1041,32 +975,35 @@ export class TimelineUI {
     }
   }
 
-  private OnShowInfoText(text: string): void {
+  public OnShowInfoText(text: string, currentTime: number): void {
     if (this.popupText)
-      this.popupText.Info(text);
+      this.popupText.Info(text, currentTime);
   }
 
-  private OnShowAlertText(text: string): void {
+  public OnShowAlertText(text: string, currentTime: number): void {
     if (this.popupText)
-      this.popupText.Alert(text);
+      this.popupText.Alert(text, currentTime);
   }
 
-  private OnShowAlarmText(text: string): void {
+  public OnShowAlarmText(text: string, currentTime: number): void {
     if (this.popupText)
-      this.popupText.Alarm(text);
+      this.popupText.Alarm(text, currentTime);
   }
 
-  private OnSpeakTTS(text: string): void {
+  public OnSpeakTTS(text: string, currentTime: number): void {
     if (this.popupText)
-      this.popupText.TTS(text);
+      this.popupText.TTS(text, currentTime);
   }
 
-  private OnTrigger(trigger: LooseTimelineTrigger, matches: RegExpExecArray | null): void {
+  public OnTrigger(
+      trigger: LooseTimelineTrigger,
+      matches: RegExpExecArray | null,
+      currentTime: number): void {
     if (this.popupText)
-      this.popupText.Trigger(trigger, matches);
+      this.popupText.Trigger(trigger, matches, currentTime);
   }
 
-  private OnSyncTime(fightNow: number, running: boolean): void {
+  public OnSyncTime(fightNow: number, running: boolean): void {
     if (!this.options.Debug || !this.debugElement)
       return;
 
@@ -1081,7 +1018,7 @@ export class TimelineUI {
       this.debugFightTimer = document.createElement('timer-bar');
       this.debugFightTimer.width = '100px';
       this.debugFightTimer.height = '17px';
-      this.debugFightTimer.duration = `${kBig}`;
+      this.debugFightTimer.duration = kBig;
       this.debugFightTimer.lefttext = 'elapsed';
       this.debugFightTimer.toward = 'right';
       this.debugFightTimer.stylefill = 'fill';
@@ -1091,19 +1028,19 @@ export class TimelineUI {
     }
 
     // Force this to be reset.
-    this.debugFightTimer.elapsed = '0';
-    this.debugFightTimer.elapsed = fightNow.toString();
+    this.debugFightTimer.elapsed = 0;
+    this.debugFightTimer.elapsed = fightNow;
   }
 }
 
 export class TimelineController {
-  private timelines: { [filename: string]: string };
+  protected timelines: { [filename: string]: string };
 
   private suppressNextEngage: boolean;
-  private wipeRegex: Regex<Network6dParams>;
-  private activeTimeline: Timeline | null = null;
+  private wipeRegex: CactbotBaseRegExp<'ActorControl'>;
+  protected activeTimeline: Timeline | null = null;
 
-  constructor(private options: RaidbossOptions, private ui: TimelineUI,
+  constructor(protected options: RaidbossOptions, protected ui: TimelineUI,
       raidbossDataFiles: { [filename: string]: string }) {
     this.options = options;
     this.ui = ui;
@@ -1117,10 +1054,10 @@ export class TimelineController {
 
     // Used to suppress any Engage! if there's a wipe between /countdown and Engage!.
     this.suppressNextEngage = false;
-    this.wipeRegex = Regexes.network6d({ command: '40000010' });
+    this.wipeRegex = NetRegexes.network6d({ command: '40000010' });
   }
 
-  public SetPopupTextInterface(popupText: PopupText): void {
+  public SetPopupTextInterface(popupText: PopupTextGenerator): void {
     this.ui.SetPopupTextInterface(popupText);
   }
 
@@ -1159,7 +1096,8 @@ export class TimelineController {
   }
 
   public SetActiveTimeline(timelineFiles: string[], timelines: string[],
-      replacements: Replacement[], triggers: LooseTimelineTrigger[], styles: Style[]): void {
+      replacements: TimelineReplacement[], triggers: LooseTimelineTrigger[],
+      styles: TimelineStyle[]): void {
     this.activeTimeline = null;
 
     let text = '';
@@ -1191,8 +1129,9 @@ export class TimelineLoader {
     this.timelineController = timelineController;
   }
 
-  public SetTimelines(timelineFiles: string[], timelines: string[], replacements: Replacement[],
-      triggers: LooseTimelineTrigger[], styles: Style[]): void {
+  public SetTimelines(timelineFiles: string[], timelines: string[],
+      replacements: TimelineReplacement[], triggers: LooseTimelineTrigger[],
+      styles: TimelineStyle[]): void {
     this.timelineController.SetActiveTimeline(
         timelineFiles,
         timelines,

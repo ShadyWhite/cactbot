@@ -1,4 +1,6 @@
+import { Job } from '../../../../../types/job';
 import EmulatorCommon from '../../EmulatorCommon';
+
 import LogRepository from './LogRepository';
 
 const fields = {
@@ -18,6 +20,7 @@ export default class LineEvent {
   public readonly hexEvent: string;
   public readonly timestamp: number;
   public readonly checksum: string;
+  public readonly properCaseConvertedLine?: string;
 
   constructor(repo: LogRepository, public networkLine: string, parts: string[]) {
     this.decEvent = parseInt(parts[fields.event] ?? '0');
@@ -104,7 +107,7 @@ export const isLineEventTarget = (line: LineEvent): line is LineEventTarget => {
 
 export interface LineEventJobLevel extends LineEvent {
   readonly isJobLevel: true;
-  readonly job: string;
+  readonly job: Job;
   readonly jobId: number;
   readonly level: number;
 }

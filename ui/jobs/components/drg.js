@@ -16,19 +16,17 @@ export function setup(bars) {
     kAbility.HighJump,
     kAbility.Jump,
   ], () => {
-    highJumpBox.duration = 0;
     highJumpBox.duration = 30;
   });
 
   const disembowelBox = bars.addProcBox({
     id: 'drg-procs-disembowel',
     fgColor: 'drg-color-disembowel',
+    notifyWhenExpired: true,
   });
   bars.onCombo((skill) => {
-    if (skill === kAbility.Disembowel) {
-      disembowelBox.duration = 0;
+    if (skill === kAbility.Disembowel)
       disembowelBox.duration = 30 + 1;
-    }
   });
   const lanceChargeBox = bars.addProcBox({
     id: 'drg-procs-lancecharge',
@@ -36,10 +34,9 @@ export function setup(bars) {
     threshold: 20,
   });
   bars.onUseAbility(kAbility.LanceCharge, () => {
-    lanceChargeBox.duration = 0;
     lanceChargeBox.duration = 20;
     lanceChargeBox.fg = computeBackgroundColorFrom(lanceChargeBox, 'drg-color-lancecharge.active');
-    tid1 = setTimeout(() => {
+    tid1 = window.setTimeout(() => {
       lanceChargeBox.duration = 70;
       lanceChargeBox.fg = computeBackgroundColorFrom(lanceChargeBox, 'drg-color-lancecharge');
     }, 20000);
@@ -50,10 +47,9 @@ export function setup(bars) {
     threshold: 20,
   });
   bars.onUseAbility(kAbility.DragonSight, () => {
-    dragonSightBox.duration = 0;
     dragonSightBox.duration = 20;
     dragonSightBox.fg = computeBackgroundColorFrom(dragonSightBox, 'drg-color-dragonsight.active');
-    tid2 = setTimeout(() => {
+    tid2 = window.setTimeout(() => {
       dragonSightBox.duration = 100;
       dragonSightBox.fg = computeBackgroundColorFrom(dragonSightBox, 'drg-color-dragonsight');
     }, 20000);

@@ -1,4 +1,5 @@
 import { Lang } from '../resources/languages';
+
 import { Job } from './job';
 
 declare global {
@@ -40,17 +41,10 @@ export interface JobDetail {
   };
   'AST': {
     heldCard: 'Balance' | 'Bole' | 'Arrow' | 'Spear' | 'Ewer' | 'Spire';
-    arcanums: string;
-  };
-  'PGL': {
-    lightningMilliseconds: number;
-    lightningStacks: number;
+    arcanums: ('Solar' | 'Lunar' | 'Celestial')[];
   };
   'MNK': {
-    lightningStacks: number;
-    lightningMilliseconds: number;
     chakraStacks: number;
-    lightningTimerFrozen: boolean;
   };
   'DRG': {
     eyesAmount: number;
@@ -87,7 +81,7 @@ export interface JobDetail {
     feathers: number;
     esprit: number;
     currentStep: number;
-    steps: string;
+    steps: ('Emboite' | 'Entrechat' | 'Jete' | 'Pirouette')[];
   };
   'THM': {
     umbralMilliseconds: number;
@@ -263,6 +257,10 @@ export interface EventMap {
   // #endregion
 }
 
+export type EventResponses = {
+  [event in keyof EventMap]: Parameters<EventMap[event]>[0];
+};
+
 export type LogEvent = {
   type: 'onLogEvent';
   detail: {
@@ -289,9 +287,16 @@ export type SavedConfig = {
   [overlayName: string]: SavedConfigEntry;
 };
 
-interface PlayerChangedRet {
-  name: string;
+type PlayerChangedJobDetails<T> = {
+  job: T;
+  jobDetail: JobDetail[T];
+} | {
   job: Job;
+  jobDetail: null;
+}
+
+type PlayerChangedBase = {
+  name: string;
   level: number;
   currentHP: number;
   maxHP: number;
@@ -302,14 +307,6 @@ interface PlayerChangedRet {
   currentGP: number;
   maxGP: number;
   currentShield: number;
-  // TODO: Is there a cleaner way to do this? It would be better if there were a way to
-  // determine which job was passed in with the event and explicitly use that JobDetail
-  // Potentially add the job to the jobDetail passed back from the C# plugin, and use
-  // that information to decide the type
-  jobDetail: JobDetail['PLD'] & JobDetail['WAR'] & JobDetail['DRK'] & JobDetail['GNB'] & JobDetail['WHM'] &
-    JobDetail['SCH'] & JobDetail['AST'] & JobDetail['PGL'] & JobDetail['MNK'] & JobDetail['DRG'] &
-    JobDetail['NIN'] & JobDetail['SAM'] & JobDetail['BRD'] & JobDetail['MCH'] & JobDetail['DNC'] &
-    JobDetail['THM'] & JobDetail['BLM'] & JobDetail['ACN'] & JobDetail['SMN'] & JobDetail['RDM'];
   pos: {
     x: number;
     y: number;
@@ -318,43 +315,121 @@ interface PlayerChangedRet {
   rotation: number;
   bait: number;
   debugJob: string;
+};
+
+type PlayerChangedRet = Job extends infer T ? T extends Job ?
+  PlayerChangedJobDetails<T> & PlayerChangedBase : never : never;
+
+// Member names taken from OverlayPlugin's MiniParse.cs
+// Types taken from FFXIV parser plugin
+export interface PluginCombatantState {
+  CurrentWorldID?: number;
+  WorldID?: number;
+  WorldName?: string;
+  BNpcID?: number;
+  BNpcNameID?: number;
+  PartyType?: number;
+  ID?: number;
+  OwnerID?: number;
+  type?: number;
+  Job?: number;
+  Level?: number;
+  Name?: string;
+  CurrentHP: number;
+  MaxHP: number;
+  CurrentMP: number;
+  MaxMP: number;
+  PosX: number;
+  PosY: number;
+  PosZ: number;
+  Heading: number;
 }
 
-export type IOverlayHandler = {
-  // OutputPlugin build-in
-  (msg: {
-    call: 'subscribe';
-    events: string[];
-  }): Promise<null>;
-  // TODO: add OverlayPlugin build-in handlers
-  // Cactbot
-  // TODO: fill up all handler types
-  (msg: {
-    call: 'cactbotReloadOverlays';
-  }): Promise<null>;
-  (msg: {
-    call: 'cactbotLoadUser';
-    source: string;
-    overlayName: string;
-  }): Promise<{ detail: CactbotLoadUserRet }>;
-  (msg: {
-    call: 'cactbotRequestPlayerUpdate';
-  }): Promise<null>;
-  (msg: {
-    call: 'cactbotRequestState';
-  }): Promise<null>;
-  (msg: {
-    call: 'cactbotSay';
-    text: string;
-  }): Promise<null>;
-  (msg: {
-    call: 'cactbotSaveData';
-  }): Promise<null>;
-  (msg: {
-    call: 'cactbotLoadData';
-    overlay: string;
-  }): Promise<{ data: SavedConfig } | null>;
-  <T>(msg: {
-    call: 'cactbotChooseDirectory';
-  }): Promise<{ data: T } | null>;
+type SubscribeHandler = (msg: {
+  call: 'subscribe';
+  events: string[];
+}) => void;
+
+type GetCombatantsHandler = (msg: {
+  call: 'getCombatants';
+  ids?: number[];
+  names?: string[];
+  props?: string[];
+}) => { combatants: PluginCombatantState[] };
+
+type CactbotReloadOverlaysHandler = (msg: {
+  call: 'cactbotReloadOverlays';
+}) => void;
+
+type CactbotLoadUserHandler = (msg: {
+  call: 'cactbotLoadUser';
+  source: string;
+  overlayName: string;
+}) => { detail: CactbotLoadUserRet };
+
+type CactbotRequestPlayerUpdateHandler = (msg: {
+  call: 'cactbotRequestPlayerUpdate';
+}) => void;
+
+type CactbotRequestStateHandler = (msg: {
+  call: 'cactbotRequestState';
+}) => void;
+
+type CactbotSayHandler = (msg: {
+  call: 'cactbotSay';
+  text: string;
+}) => void;
+
+type CactbotSaveDataHandler = (msg: {
+  call: 'cactbotSaveData';
+}) => void;
+
+type CactbotLoadDataHandler = (msg: {
+  call: 'cactbotLoadData';
+  overlay: string;
+}) => ({ data: SavedConfig } | undefined);
+
+type CactbotChooseDirectoryHandler = <T>(msg: {
+  call: 'cactbotChooseDirectory';
+}) => ({ data: T } | undefined);
+
+export type OverlayHandlerAll = {
+  'subscribe': SubscribeHandler;
+  'getCombatants': GetCombatantsHandler;
+  'cactbotReloadOverlays': CactbotReloadOverlaysHandler;
+  'cactbotLoadUser': CactbotLoadUserHandler;
+  'cactbotRequestPlayerUpdate': CactbotRequestPlayerUpdateHandler;
+  'cactbotRequestState': CactbotRequestStateHandler;
+  'cactbotSay': CactbotSayHandler;
+  'cactbotSaveData': CactbotSaveDataHandler;
+  'cactbotLoadData': CactbotLoadDataHandler;
+  'cactbotChooseDirectory': CactbotChooseDirectoryHandler;
 };
+
+export type OverlayHandlerTypes = keyof OverlayHandlerAll;
+
+export type OverlayHandlerRequests = {
+  [call in OverlayHandlerTypes]: Parameters<OverlayHandlerAll[call]>[0];
+};
+
+export type OverlayHandlerAnyRequest = OverlayHandlerRequests[OverlayHandlerTypes];
+
+export type OverlayHandlerResponseTypes = {
+  [call in OverlayHandlerTypes]: ReturnType<OverlayHandlerAll[call]>;
+};
+
+export type OverlayHandlerResponses = {
+  [call in OverlayHandlerTypes]: Promise<OverlayHandlerResponseTypes[call]>;
+};
+
+export type OverlayHandlerAnyResponse = OverlayHandlerResponses[OverlayHandlerTypes];
+
+export type OverlayHandlerFuncs = {
+  [call in OverlayHandlerTypes]:
+    (msg: Parameters<OverlayHandlerAll[call]>[0]) => OverlayHandlerResponses[call];
+};
+
+// Thanks, https://stackoverflow.com/a/50375286.
+type UnionToIntersection<U> =
+  (U extends U ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+export type IOverlayHandler = UnionToIntersection<OverlayHandlerFuncs[OverlayHandlerTypes]>;
