@@ -309,6 +309,7 @@ Options.Triggers.push({
       name: {
         en: 'Classical Concepts: Pairs Order (Left->Right)',
         de: 'Elementarschöpfung: Ordnen nach Paaren (Links->Rechts)',
+        fr: 'Concepts élémentaires : Ordre des paires (Gauche->Droite)',
         cn: '经典概念 索尼顺序（左->右）',
         ko: 'Classical Concepts: 도형 순서 (왼 -> 오)',
       },
@@ -670,7 +671,7 @@ Options.Triggers.push({
         superchain2aLeftNorthSouth: {
           en: 'North + Her Left (then go South)',
           de: 'Norden + Links von Ihr (dannach Süden)',
-          fr: 'Norf + Sa gauche (puis aller au Sud)',
+          fr: 'Nord + Sa gauche (puis aller au Sud)',
           ja: '北 + 南へ前進 (左安置)',
           cn: '上 (北) + Boss左侧 (稍后 去下南)',
           ko: '북쪽 + 보스 왼쪽 (그리고 남쪽으로)',
@@ -4042,6 +4043,7 @@ Options.Triggers.push({
             // This is meant to be "person without wind who gets an extra stack".
             en: 'Fire Marker',
             de: 'Feuer Markierung',
+            fr: 'Marqueur de feu',
             ja: '自分に初炎!',
             cn: '火标记点名',
             ko: '불 대상자',
@@ -4255,7 +4257,6 @@ Options.Triggers.push({
     },
     {
       'locale': 'fr',
-      'missingTranslations': true,
       'replaceSync': {
         '(?<! )Athena': 'Athéna',
         'Anthropos': 'anthropos',

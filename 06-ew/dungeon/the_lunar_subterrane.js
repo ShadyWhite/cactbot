@@ -47,7 +47,9 @@ Options.Triggers.push({
         text: {
           en: 'Blue Square Safe',
           de: 'Blaues Viereck sicher',
+          fr: 'Les carrés bleu sont sûrs',
           ja: '安置: 青四角',
+          cn: '蓝正方安全',
           ko: '파란색 네모 안전',
         },
       },
@@ -61,7 +63,9 @@ Options.Triggers.push({
         text: {
           en: 'Pink Triangle Safe',
           de: 'Pinkes Dreieck sicher',
+          fr: 'Les triangles rose sont sûrs',
           ja: '安置: 赤三角',
+          cn: '粉三角安全',
           ko: '분홍색 삼각형 안전',
         },
       },
@@ -138,21 +142,29 @@ Options.Triggers.push({
         northeast: {
           en: 'Inner northeast safe',
           de: 'Innen nordöstlich sicher',
+          fr: 'Nord-est intérieur sûr',
+          cn: '内侧 右上(东北) 安全',
           ko: '안쪽 북동 안전',
         },
         northwest: {
           en: 'Inner northwest safe',
           de: 'Innen nordwestlich sicher',
+          fr: 'Nord-ouest intérieur sûr',
+          cn: '内侧 左上(西北) 安全',
           ko: '안쪽 북서 안전',
         },
         southeast: {
           en: 'Inner southeast safe',
           de: 'Innen südöstlich sicher',
+          fr: 'Sud-est intérieur sûr',
+          cn: '内侧 右下(东南) 安全',
           ko: '안쪽 남동 안전',
         },
         southwest: {
           en: 'Inner southwest safe',
           de: 'Innen südwestlich sicher',
+          fr: 'Sud-Ouest intérieur sûr',
+          cn: '内侧 左下(西南) 安全',
           ko: '안쪽 남서 안전',
         },
         unknown: Outputs.unknown,
@@ -173,7 +185,9 @@ Options.Triggers.push({
         cleanse: {
           en: 'Cleanse ${player}\'s Doom',
           de: 'Reinige ${player}\'s Verhängnis',
+          fr: 'Guérissez le Glas de ${player}',
           ja: 'エスナ: ${player}',
+          cn: '康复: ${player}',
           ko: '${player} 선고 해제하기',
         },
       },
@@ -227,7 +241,9 @@ Options.Triggers.push({
         text: {
           en: 'Go Sides on Wall',
           de: 'Geh seitlich an die Wand',
+          fr: 'Allez sur les côtés du mur',
           ja: '壁の方へ',
+          cn: '去墙边',
           ko: '옆쪽 벽에 붙기',
         },
       },
@@ -247,7 +263,7 @@ Options.Triggers.push({
         text: {
           en: 'Get Behind and Out',
           de: 'Geh nach Hinten und Raus',
-          fr: 'Passez derrière et extérieur',
+          fr: 'Passez derrière et à l\'extérieur',
           ja: '後ろの外側へ',
           cn: '去背后远离',
           ko: '보스 뒤 바깥쪽으로',
@@ -273,7 +289,9 @@ Options.Triggers.push({
         avoid: {
           en: 'Away from orbs',
           de: 'Weg von den Orbs',
+          fr: 'Éloignez-vous des orbes',
           ja: '玉から離れて',
+          cn: '远离球',
           ko: '구슬에서 멀리 떨어지기',
         },
       },
@@ -450,7 +468,6 @@ Options.Triggers.push({
     },
     {
       'locale': 'fr',
-      'missingTranslations': true,
       'replaceSync': {
         'Aetheric Charge': 'globe magique',
         'Damcyan Antlion': 'fourmilion de Damcyan',
@@ -463,6 +480,8 @@ Options.Triggers.push({
         'The Cloven Crystal Square': 'Place du cristal',
       },
       'replaceText': {
+        '\\(cast\\)': '(Incante)',
+        '\\(spread\\)': '(Écartement)',
         'Abyssal Outburst': 'Onde noire',
         'Antipodal Assault': 'Percée antipodale',
         'Antlion March': 'Marche des fourmilions',
@@ -493,7 +512,6 @@ Options.Triggers.push({
     },
     {
       'locale': 'ja',
-      'missingTranslations': true,
       'replaceSync': {
         'Aetheric Charge': '魔力球',
         'Damcyan Antlion': 'ダムシアン・アントリオン',
