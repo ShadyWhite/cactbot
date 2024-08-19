@@ -66,16 +66,27 @@ Options.Triggers.push({
       netRegex: { location: ['00', '03'], flags: mapEffectTileState.quickRebuid, capture: true },
       infoText: (_data, matches, output) => {
         if (matches.location === '00')
-          return output.nwSE();
-        return output.neSW();
+          return output.knockback({
+            pos1: output.northwest(),
+            pos2: output.southeast(),
+          });
+        return output.knockback({
+          pos1: output.northeast(),
+          pos2: output.southwest(),
+        });
       },
       outputStrings: {
-        nwSE: {
-          en: 'Knockback (NW/SE Safe)',
+        knockback: {
+          en: 'Knockback (${pos1}/${pos2} Safe)',
+          de: 'Rückstoß (${pos1}/${pos2} sicher)',
+          ja: 'ノックバック (${pos1}/${pos2} が安地)',
+          cn: '击退 (${pos1}/${pos2} 安全)',
+          ko: '넉백 (${pos1}/${pos2} 안전)',
         },
-        neSW: {
-          en: 'Knockback (NE/SW Safe)',
-        },
+        northeast: Outputs.dirNE,
+        northwest: Outputs.dirNW,
+        southeast: Outputs.dirSE,
+        southwest: Outputs.dirSW,
       },
     },
     {
@@ -160,6 +171,7 @@ Options.Triggers.push({
           de: '${dir1} ${sep} ${dir2} (Stehen bleiben)',
           ja: '${dir1} ${sep} ${dir2} (そのまま)',
           cn: '${dir1} ${sep} ${dir2} (不动)',
+          ko: '${dir1} ${sep} ${dir2} (그대로)',
         },
         separator: {
           en: ' => ',
@@ -172,6 +184,7 @@ Options.Triggers.push({
           de: '${dirs}',
           ja: '${dirs}',
           cn: '${dirs}',
+          ko: '${dirs}',
         },
       },
     },
@@ -185,6 +198,10 @@ Options.Triggers.push({
       outputStrings: {
         outSpread: {
           en: 'Out + Spread',
+          de: 'Raus + Verteilen',
+          ja: '外へ + 散開',
+          cn: '远离 + 分散',
+          ko: '밖으로 + 산개',
         },
       },
     },
@@ -213,6 +230,7 @@ Options.Triggers.push({
           de: 'Schlag Vorwärts (Ziel auf eine ganze Fläche)',
           ja: '前方吹き飛ばし (割れていない床を狙って)',
           cn: '向前击飞 (瞄准完好的地板)',
+          ko: '전방으로 날아감 (부서지지 않은 칸으로 유도)',
         },
       },
     },
@@ -228,6 +246,7 @@ Options.Triggers.push({
           de: '${target} Start',
           ja: '${target} に吹き飛ばし',
           cn: '${target} 击飞',
+          ko: '${target} 날아감',
         },
       },
     },
@@ -243,6 +262,7 @@ Options.Triggers.push({
           de: 'Steh auf einer ganzen Fläche',
           ja: '割れてない床に立って',
           cn: '被砸 (站在完好的场地)',
+          ko: '부서지지 않은 칸으로 유도',
         },
       },
     },
@@ -258,6 +278,7 @@ Options.Triggers.push({
           de: '${target} Betäubung',
           ja: '${target} にスタン',
           cn: '${target} 被砸',
+          ko: '${target} 기절',
         },
       },
     },
@@ -330,7 +351,7 @@ Options.Triggers.push({
           de: 'Rollenposition',
           fr: 'Positions par rôle',
           ja: 'ロールの担当位置へ',
-          cn: '去指定位置',
+          cn: '职能分散站位',
           ko: '직업별 산개위치로',
         },
       },
@@ -371,12 +392,24 @@ Options.Triggers.push({
         dirW: Outputs.dirW,
         insideOut: {
           en: 'Inside => Outside',
+          de: 'Rein => Raus',
+          ja: '内側 => 外側',
+          cn: '场内 => 场外',
+          ko: '안으로 => 밖으로',
         },
         outsideIn: {
           en: 'Outside => Inside',
+          de: 'Raus => Rein',
+          ja: '外側 => 内側',
+          cn: '场外 => 场内',
+          ko: '밖으로 => 안으로',
         },
         combo: {
           en: '${dir}, ${cleaves}',
+          de: '${dir}, ${cleaves}',
+          ja: '${dir}, ${cleaves}',
+          cn: '${dir}, ${cleaves}',
+          ko: '${dir}, ${cleaves}',
         },
         unknown: Outputs.unknown,
       },
@@ -399,6 +432,10 @@ Options.Triggers.push({
       outputStrings: {
         proximity: {
           en: 'Proximity baits at target',
+          de: 'Nah-Distanz-Köder vom Ziel',
+          ja: 'ボスに近づいて誘導',
+          cn: '引导站位',
+          ko: '대상 근처에서 유도',
         },
         unknown: Outputs.unknown,
       },
@@ -480,15 +517,31 @@ Options.Triggers.push({
         dirW: Outputs.dirW,
         in: {
           en: 'In + Healer Stacks => Out',
+          de: 'Rein + Auf Heiler sammeln => Raus',
+          ja: '中へ + ヒラ頭割り => 外へ',
+          cn: '场内 + 治疗分摊组 => 场外',
+          ko: '안으로 +  힐러 그룹 쉐어 => 밖으로',
         },
         out: {
           en: 'Out + Healer Stacks => In',
+          de: 'Raus + Auf Heiler sammeln => Rein',
+          ja: '外へ + ヒラ頭割り => 中へ',
+          cn: '场外 + 治疗分摊组 => 场内',
+          ko: '밖으로 +  힐러 그룹 쉐어 => 안으로',
         },
         healerStacks: {
           en: 'Go ${dir} => ${inOut}',
+          de: 'Geh nach ${dir} => ${inOut}',
+          ja: '${dir} へ => ${inOut}',
+          cn: '去 ${dir} => ${inOut}',
+          ko: '${dir}으로 이동 => ${inOut}',
         },
         proximity: {
           en: 'Go ${dir} => Proximity Baits + Spreads',
+          de: 'Geh nach ${dir} => Nah-Distanz-Köder + Verteilen',
+          ja: '${dir} へ => ボスに近づいて誘導 + 散開',
+          cn: '去 ${dir} => 引导站位 + 分散',
+          ko: '${dir}으로 이동 => 대상 근처에서 유도 + 산개',
         },
       },
     },

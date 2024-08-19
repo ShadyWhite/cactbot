@@ -57,43 +57,83 @@ const isSwordQuiverId = (id) => {
 // For now, call the in/out, the party safe spot, and the bait spot; users can customize.
 // If/once standard strats develop, this would be a good thing to revisit.
 const witchHuntAlertOutputStrings = {
-  in: Outputs.in,
-  out: Outputs.out,
+  in: {
+    en: 'In',
+    de: 'Rein',
+    ja: '中へ',
+    cn: '月环',
+  },
+  out: {
+    en: 'Out',
+    de: 'Raus',
+    ja: '外へ',
+    cn: '钢铁',
+  },
   near: {
     en: 'Baits Close (Party Far)',
+    de: 'Nah ködern (Gruppe fern)',
+    ja: '近づいて誘導 (他は離れる)',
+    cn: '引导近 (小队远)',
   },
   far: {
     en: 'Baits Far (Party Close)',
+    de: 'Fern ködern (Gruppe nah)',
+    ja: '離れて誘導 (他は近づく)',
+    cn: '引导远 (小队近)',
   },
   combo: {
     en: '${inOut} => ${bait}',
+    de: '${inOut} => ${bait}',
+    ja: '${inOut} => ${bait}',
+    cn: '${inOut} => ${bait}',
   },
   unknown: Outputs.unknown,
 };
 const tailThrustOutputStrings = {
   iceLeft: {
     en: 'Double Knockback (<== Start on Left)',
+    de: 'Doppel-Rückstoß (<== Starte Links)',
+    ja: '2連続ノックバック (<== 左から開始)',
+    cn: '两次击退 (<== 左边开始)',
   },
   iceRight: {
     en: 'Double Knockback (Start on Right ==>)',
+    de: 'Doppel-Rückstoß (Starte Rechts ==>)',
+    ja: '2連続ノックバック (右から開始 ==>)',
+    cn: '两次击退 (右边开始 ==>)',
   },
   fireLeft: {
     en: 'Fire - Start Front + Right ==>',
+    de: 'Feuer - Starte Vorne + Rechts ==>',
+    ja: '火 - 最前列 + 右側へ ==>',
+    cn: '火 - 右右右 ==>',
   },
   fireRight: {
     en: '<== Fire - Start Front + Left',
+    de: '<== Feuer - Starte Vorne + Links',
+    ja: '<== 火 - 最前列 + 左側へ',
+    cn: '<== 火 - 左左左',
   },
   unknown: Outputs.unknown,
 };
 const swordQuiverOutputStrings = {
   frontAndSides: {
     en: 'Go Front / Sides',
+    de: 'Geh nach Vorne / Seiten',
+    ja: '前方 / 横側 へ',
+    cn: '去前 / 侧边',
   },
   frontAndBack: {
     en: 'Go Front / Back',
+    de: 'Geh nach Vorne / Hinten',
+    ja: '前方 / 後方 へ',
+    cn: '去前 / 后边',
   },
   sidesAndBack: {
     en: 'Go Sides / Back',
+    de: 'Geh Seitlich / Hinten',
+    ja: '横 / 後方 へ',
+    cn: '去侧 / 后边',
   },
 };
 Options.Triggers.push({
@@ -110,6 +150,10 @@ Options.Triggers.push({
       electromines: {},
       electrominesSafe: [],
       witchgleamSelfCount: 0,
+      condenserMap: {
+        long: [],
+        short: [],
+      },
       seenConductorDebuffs: false,
       fulminousFieldCount: 0,
       conductionPointTargets: [],
@@ -184,6 +228,9 @@ Options.Triggers.push({
       outputStrings: {
         avoid: {
           en: 'Avoid Front + Side Cleaves',
+          de: 'Vermeide Frontal + Seiten-Angriff',
+          ja: '縦と横の範囲を避けて',
+          cn: '躲避前方激光 + 场边直线AoE',
         },
       },
     },
@@ -210,13 +257,29 @@ Options.Triggers.push({
       },
       run: (data) => delete data.bewitchingBurstSafe,
       outputStrings: {
-        in: Outputs.in,
-        out: Outputs.out,
+        in: {
+          en: 'In',
+          de: 'Rein',
+          ja: '中へ',
+          cn: '内场',
+        },
+        out: {
+          en: 'Out',
+          de: 'Raus',
+          ja: '外へ',
+          cn: '外场',
+        },
         spreadAvoid: {
           en: 'Spread (Avoid Side Cleaves)',
+          de: 'Verteilen (Vermeide Seiten-Angriff)',
+          ja: '散開 (横の範囲を避けて)',
+          cn: '分散 (注意场边直线AoE)',
         },
         combo: {
           en: '${inOut} + ${spread}',
+          de: '${inOut} + ${spread}',
+          ja: '${inOut} + ${spread}',
+          cn: '${inOut} + ${spread}',
         },
       },
     },
@@ -251,16 +314,35 @@ Options.Triggers.push({
       },
       run: (data) => data.seenBasicWitchHunt = true,
       outputStrings: {
-        in: Outputs.in,
-        out: Outputs.out,
+        in: {
+          en: 'In',
+          de: 'Rein',
+          ja: '中へ',
+          cn: '内场',
+        },
+        out: {
+          en: 'Out',
+          de: 'Raus',
+          ja: '外へ',
+          cn: '外场',
+        },
         near: {
           en: 'Spread (Be Closer)',
+          de: 'Verteilen (Sei näher dran)',
+          ja: '散開(近づく)',
+          cn: '靠近分散',
         },
         far: {
           en: 'Spread (Be Further)',
+          de: 'Verteilen (Sei weiter weg)',
+          ja: '散開(離れる)',
+          cn: '远离分散',
         },
         combo: {
           en: '${inOut} + ${spread}',
+          de: '${inOut} + ${spread}',
+          ja: '${inOut} + ${spread}',
+          cn: '${inOut} + ${spread}',
         },
       },
     },
@@ -307,13 +389,29 @@ Options.Triggers.push({
         return output.baitCombo({ allBaits: baits.join(output.separator()) });
       },
       outputStrings: {
-        in: Outputs.in,
-        out: Outputs.out,
+        in: {
+          en: 'In',
+          de: 'Rein',
+          ja: '中へ',
+          cn: '月环',
+        },
+        out: {
+          en: 'Out',
+          de: 'Raus',
+          ja: '外へ',
+          cn: '钢铁',
+        },
         near: {
           en: 'Close',
+          de: 'Nah',
+          ja: '近づく',
+          cn: '近',
         },
         far: {
           en: 'Far',
+          de: 'Fern',
+          ja: '離れる',
+          cn: '远',
         },
         separator: {
           en: ' => ',
@@ -323,9 +421,15 @@ Options.Triggers.push({
         },
         baitStep: {
           en: '${inOut} (${bait})',
+          de: '${inOut} (${bait})',
+          ja: '${inOut} (${bait})',
+          cn: '${inOut} (${bait})',
         },
         baitCombo: {
           en: 'Baits: ${allBaits}',
+          de: 'Ködern: ${allBaits}',
+          ja: '誘導: ${allBaits}',
+          cn: '引导: ${allBaits}',
         },
         unknown: Outputs.unknown,
       },
@@ -492,7 +596,24 @@ Options.Triggers.push({
         spread: Outputs.spread,
         combo: {
           en: '${dir} => ${mech}',
+          de: '${dir} => ${mech}',
+          ja: '${dir} => ${mech}',
+          cn: '${dir} => ${mech}',
         },
+      },
+    },
+    {
+      id: 'R4S Electrical Condenser Debuff Collect',
+      type: 'GainsEffect',
+      netRegex: { effectId: 'F9F', capture: true },
+      condition: Conditions.targetIsNotYou(),
+      run: (data, matches) => {
+        data.condenserTimer = parseFloat(matches.duration) > 30 ? 'long' : 'short';
+        const shortName = data.party.member(matches.target).nick;
+        if (data.condenserTimer === 'long')
+          data.condenserMap.long.push(shortName);
+        else
+          data.condenserMap.short.push(shortName);
       },
     },
     {
@@ -500,24 +621,33 @@ Options.Triggers.push({
       type: 'GainsEffect',
       netRegex: { effectId: 'F9F', capture: true },
       condition: Conditions.targetIsYou(),
+      delaySeconds: 0.5,
       infoText: (data, matches, output) => {
         data.condenserTimer = parseFloat(matches.duration) > 30 ? 'long' : 'short';
         // Long debuff players will pick up an extra stack later.
         // Just handle it here to cut down on trigger counts.
         if (data.condenserTimer === 'long')
           data.witchgleamSelfCount++;
+        // Some strats use long/short debuff assignments to do position swaps for EE2.
+        const same = data.condenserMap[data.condenserTimer].join(', ');
         // Note: Taking unexpected lightning damage from Four/Eight Star, Sparks, or Sidewise Spark
         // will cause the stack count to increase. We could try to try to track that, but it makes
         // the final mechanic resolvable only under certain conditions (which still cause deaths),
         // so don't bother for now.  PRs welcome? :)
-        return output[data.condenserTimer]();
+        return output[data.condenserTimer]({ same: same });
       },
       outputStrings: {
         short: {
-          en: 'Short Debuff',
+          en: 'Short Debuff (w/ ${same})',
+          de: 'Kurzer Debuff (mit ${same})',
+          ja: '短いデバフ (同じく/ ${same})',
+          cn: '短 Debuff (和 ${same})',
         },
         long: {
-          en: 'Long Debuff',
+          en: 'Long Debuff (w/ ${same})',
+          de: 'Langer Debuff (mit ${same})',
+          ja: '長いデバフ (同じく/ ${same})',
+          cn: '长 Debuff (和 ${same})',
         },
       },
     },
@@ -527,6 +657,21 @@ Options.Triggers.push({
       netRegex: { id: '9786' },
       condition: Conditions.targetIsYou(),
       run: (data) => data.witchgleamSelfCount++,
+    },
+    {
+      id: 'R4S Witchgleam Self Reminder',
+      type: 'StartsUsing',
+      netRegex: { id: '95CE', source: 'Wicked Thunder', capture: false },
+      condition: (data) => data.condenserTimer === 'long',
+      delaySeconds: 3,
+      infoText: (data, _matches, output) =>
+        output.witchgleamTimes({ times: data.witchgleamSelfCount }),
+      outputStrings: {
+        witchgleamTimes: {
+          en: '${times} stacks (later)',
+          cn: '(稍后 ${times} 层)',
+        },
+      },
     },
     {
       id: 'R4S Electrical Condenser Debuff Expiring',
@@ -540,6 +685,9 @@ Options.Triggers.push({
       outputStrings: {
         spread: {
           en: 'Spread (${stacks} stacks)',
+          de: 'Verteilen (${stacks} sammeln)',
+          ja: '散開 (${stacks} 回のほう)',
+          cn: '分散 (${stacks} 层)',
         },
       },
     },
@@ -554,9 +702,22 @@ Options.Triggers.push({
       delaySeconds: 0.2,
       alertText: (data, matches, output) => {
         const starEffect = data.starEffect ?? 'unknown';
+        // Some strats have stack/spread positions based on Witchgleam stack count,
+        // so for the long debuffs, add that info (both for positioning and as a reminder).
+        const reminder = data.condenserTimer === 'long'
+          ? output.stacks({ stacks: data.witchgleamSelfCount })
+          : '';
         if (matches.id === '95EC')
-          return output.combo({ dir: output.west(), mech: output[starEffect]() });
-        return output.combo({ dir: output.east(), mech: output[starEffect]() });
+          return output.combo({
+            dir: output.west(),
+            mech: output[starEffect](),
+            remind: reminder,
+          });
+        return output.combo({
+          dir: output.east(),
+          mech: output[starEffect](),
+          remind: reminder,
+        });
       },
       outputStrings: {
         east: Outputs.east,
@@ -564,8 +725,17 @@ Options.Triggers.push({
         partners: Outputs.stackPartner,
         spread: Outputs.spread,
         unknown: Outputs.unknown,
+        stacks: {
+          en: '(${stacks} stacks after)',
+          de: '(${stacks} danach sammeln)',
+          ja: '(${stacks} 回のほう)',
+          cn: '(${stacks} 层雷)',
+        },
         combo: {
-          en: '${dir} => ${mech}',
+          en: '${dir} => ${mech} ${remind}',
+          de: '${dir} => ${mech} ${remind}',
+          ja: '${dir} => ${mech} ${remind}',
+          cn: '${dir} => ${mech} ${remind}',
         },
       },
     },
@@ -615,9 +785,15 @@ Options.Triggers.push({
         unknown: Outputs.unknown,
         tank: {
           en: '${dir} - Be in Front',
+          de: '${dir} - Sei Vorne',
+          ja: '${dir} - ボス近くで受けて',
+          cn: '${dir} - 站在最前面',
         },
         nonTank: {
           en: '${dir} - Behind Tank',
+          de: '${dir} - Hinter dem Tank',
+          ja: '${dir} - タンクの後ろへ',
+          cn: '${dir} - 站坦克后面',
         },
       },
     },
@@ -633,16 +809,28 @@ Options.Triggers.push({
         output.responseOutputStrings = {
           swap: {
             en: 'Swap Sides',
+            de: 'Seiten wechseln',
+            ja: '場所を交代',
+            cn: '穿',
           },
           stay: {
             en: 'Stay',
+            de: 'Stehen bleiben',
+            ja: 'そのまま',
+            cn: '停',
           },
           unknown: Outputs.unknown,
           tank: {
             en: '${dir} - Be in Front',
+            de: '${dir} - Sei Vorne',
+            ja: '${dir} - ボス近くで受けて',
+            cn: '${dir} - 站在最前面',
           },
           nonTank: {
             en: '${dir} - Behind Tank',
+            de: '${dir} - Hinter dem Tank',
+            ja: '${dir} - タンクの後ろへ',
+            cn: '${dir} - 站坦克后面',
           },
         };
         let safeSide = 'unknown';
@@ -689,18 +877,33 @@ Options.Triggers.push({
       outputStrings: {
         remoteCurrent: {
           en: 'Far Cone on You',
+          de: 'Fern-Kegel auf DIR',
+          ja: '自分から遠い人に扇範囲',
+          cn: '远雷点名',
         },
         proximateCurrent: {
           en: 'Near Cone on You',
+          de: 'Nah-Kegel auf DIR',
+          ja: '自分から近い人に扇範囲',
+          cn: '近雷点名',
         },
         spinningConductor: {
           en: 'Small AoE on You',
+          de: 'Kleine AoE auf DIR',
+          ja: '自分に小さい円範囲',
+          cn: '小钢铁点名',
         },
         roundhouseConductor: {
           en: 'Donut AoE on You',
+          de: 'Donut AoE auf DIR',
+          ja: '自分にドーナツ範囲',
+          cn: '月环点名',
         },
         colliderConductor: {
           en: 'Get Hit by Cone',
+          de: 'Werde vom Kegel getroffen',
+          ja: '扇範囲に当たって',
+          cn: '吃雷',
         },
       },
     },
@@ -713,6 +916,9 @@ Options.Triggers.push({
       outputStrings: {
         dodge: {
           en: 'Dodge w/Partner x7',
+          de: 'mit Partner ausweichen x7',
+          ja: '相方と避ける x7',
+          cn: '与搭档躲避 7 次扇形',
         },
       },
     },
@@ -755,9 +961,15 @@ Options.Triggers.push({
       outputStrings: {
         near: {
           en: 'In Front of Partner',
+          de: 'Sei vor deinem Partner',
+          ja: '相方の前へ',
+          cn: '站在搭档前面 (挡枪)',
         },
         far: {
           en: 'Behind Partner',
+          de: 'Sei hinter deinem Partner',
+          ja: '相方の後ろへ',
+          cn: '站在搭档后面',
         },
       },
     },
@@ -833,9 +1045,15 @@ Options.Triggers.push({
       outputStrings: {
         passDebuff: {
           en: 'Pass Debuff',
+          de: 'Debuff übergeben',
+          ja: 'デバフを渡して',
+          cn: '传火',
         },
         getDebuff: {
           en: 'Get Debuff',
+          de: 'Debuff nehmen',
+          ja: 'デバフを取って',
+          cn: '接火',
         },
       },
     },
@@ -847,11 +1065,11 @@ Options.Triggers.push({
       response: Responses.goSides(),
     },
     {
-      id: 'R4S Wicked Special In',
+      id: 'R4S Wicked Special Middle',
       type: 'StartsUsing',
       netRegex: { id: '9612', source: 'Wicked Thunder', capture: false },
       condition: (data) => data.secondTwilightCleaveSafe === undefined,
-      response: Responses.getIn(),
+      response: Responses.goMiddle(),
     },
     {
       id: 'R4S Aetherial Conversion',
@@ -871,6 +1089,9 @@ Options.Triggers.push({
         ...tailThrustOutputStrings,
         stored: {
           en: 'Stored: ${effect}',
+          de: 'Gespeichert: ${effect}',
+          ja: 'あとで: ${effect}',
+          cn: '存储: ${effect}',
         },
       },
     },
@@ -894,6 +1115,9 @@ Options.Triggers.push({
         output.responseOutputStrings = {
           lb3: {
             en: 'LB3!',
+            de: 'LB3!',
+            ja: 'タンク LB3!',
+            cn: '坦克 LB!',
           },
         };
         if (data.role === 'tank')
@@ -967,16 +1191,19 @@ Options.Triggers.push({
         if (dir === undefined)
           throw new UnreachableCode();
         return matches.id === '9610'
-          ? output.combo({ dir: output[dir](), inSides: output.sides() })
-          : output.combo({ dir: output[dir](), inSides: output.in() });
+          ? output.combo({ dir: output[dir](), middleSides: output.sides() })
+          : output.combo({ dir: output[dir](), middleSides: output.middle() });
       },
       run: (data) => delete data.secondTwilightCleaveSafe,
       outputStrings: {
         ...Directions.outputStringsIntercardDir,
-        in: Outputs.in,
+        middle: Outputs.middle,
         sides: Outputs.sides,
         combo: {
-          en: '${dir} => ${inSides}',
+          en: '${dir} => ${middleSides}',
+          de: '${dir} => ${middleSides}',
+          ja: '${dir} => ${middleSides}',
+          cn: '${dir} => ${middleSides}',
         },
       },
     },
@@ -1039,6 +1266,9 @@ Options.Triggers.push({
       outputStrings: {
         combo: {
           en: '${dir} => ${mech}',
+          de: '${dir} => ${mech}',
+          ja: '${dir} => ${mech}',
+          cn: '${dir} => ${mech}',
         },
         cardinals: Outputs.cardinals,
         intercards: Outputs.intercards,
@@ -1065,6 +1295,9 @@ Options.Triggers.push({
       outputStrings: {
         combo: {
           en: '${dir} => ${mech}',
+          de: '${dir} => ${mech}',
+          ja: '${dir} => ${mech}',
+          cn: '${dir} => ${mech}',
         },
         cardinals: Outputs.cardinals,
         intercards: Outputs.intercards,
@@ -1090,6 +1323,9 @@ Options.Triggers.push({
       outputStrings: {
         towers: {
           en: 'Tower Positions',
+          de: 'Turm Positionen',
+          ja: '塔の位置へ',
+          cn: '八人塔站位',
         },
       },
     },
@@ -1157,6 +1393,9 @@ Options.Triggers.push({
         right: Outputs.right,
         safe: {
           en: '${side}: Start at ${first}',
+          de: '${side}: Starte ${first}',
+          ja: '${side}: まずは ${first} から',
+          cn: '${side}: 从 ${first} 开始',
         },
         unknown: Outputs.unknown,
       },
@@ -1196,6 +1435,9 @@ Options.Triggers.push({
         },
         safe: {
           en: '${side} Side: ${order}',
+          de: '${side} Seite: ${order}',
+          ja: '${side} : ${order}',
+          cn: '${side} 侧: ${order}',
         },
         unknown: Outputs.unknown,
       },
@@ -1222,15 +1464,27 @@ Options.Triggers.push({
       outputStrings: {
         yellowLong: {
           en: 'Long Yellow Debuff (Towers First)',
+          de: 'Langer Gelber Debuff (Turm zuerst)',
+          ja: '長い黄色デバフ (塔から)',
+          cn: '长黄 (先踩塔)',
         },
         blueLong: {
           en: 'Long Blue Debuff (Towers First)',
+          de: 'Langer Blauer Debuff (Turm zuerst)',
+          ja: '長い青色デバフ (塔から)',
+          cn: '长蓝 (先踩塔)',
         },
         yellowShort: {
           en: 'Short Yellow Debuff (Cannons First)',
+          de: 'Kurzer Gelber Debuff (Kanone zuerst)',
+          ja: '短い黄色デバフ (ビーム誘導から)',
+          cn: '短黄 (先引导)',
         },
         blueShort: {
           en: 'Short Blue Debuff (Cannons First)',
+          de: 'Kurzer Blauer Debuff (Kanone zuerst)',
+          ja: '短い青色デバフ (ビーム誘導から)',
+          cn: '短蓝 (先引导)',
         },
       },
     },
@@ -1343,21 +1597,39 @@ Options.Triggers.push({
         ...Directions.outputStringsIntercardDir,
         northSouth: {
           en: 'N/S',
+          de: 'N/S',
+          ja: '南/北',
+          cn: '上(北)/下(南)',
         },
         eastWest: {
           en: 'E/W',
+          de: 'O/W',
+          ja: '東/西',
+          cn: '左(西)/右(东)',
         },
         yellowLong: {
           en: 'Soak Tower (${bait})',
+          de: 'Turm nehmen (${bait})',
+          ja: '塔を踏んで (${bait})',
+          cn: '踩塔 (${bait})',
         },
         blueLong: {
           en: 'Soak Tower (${bait})',
+          de: 'Turm nehmen (${bait})',
+          ja: '塔を踏んで (${bait})',
+          cn: '踩塔 (${bait})',
         },
         yellowShort: {
           en: 'Blue Cannon (${loc}) - Point ${bait}',
+          de: 'Blaue Kanone (${loc}) - Richte nach ${bait}',
+          ja: '青いビーム誘導 (${loc}) - ${bait}',
+          cn: '蓝激光 (${loc}) - 打向 ${bait}',
         },
         blueShort: {
           en: 'Yellow Cannon (${loc}) - Point ${bait}',
+          de: 'Gelbe Kanone (${loc}) - Richte nach ${bait}',
+          ja: '黄色いビーム誘導 (${loc}) - ${bait}',
+          cn: '黄激光 (${loc}) - 打向 ${bait}',
         },
       },
     },
@@ -1382,6 +1654,206 @@ Options.Triggers.push({
         return output[swordQuiverSafeMap[id]]();
       },
       outputStrings: swordQuiverOutputStrings,
+    },
+  ],
+  timelineReplace: [
+    {
+      'locale': 'de',
+      'replaceSync': {
+        'Electromine': 'Elektromine',
+        'Wicked Replica': 'Tosender Donner-Phantom',
+        'Wicked Thunder': 'Tosender Donner',
+      },
+      'replaceText': {
+        '(?<! )Spark': 'Funken',
+        '(?<! )Witch Hunt': 'Hexenjagd',
+        'Azure Thunder': 'Azurblauer Donner',
+        'Bewitching Flight': 'Hexenflug',
+        'Burst': 'Explosion',
+        'Cannonbolt': 'Kanonenblitz',
+        'Chain Lightning': 'Kettenblitz',
+        'Conduction Point': 'Blitzpunkt',
+        'Cross Tail Switch': 'Elektroschwanz-Wirbel',
+        'Eight Star': 'Acht Sterne',
+        'Electrifying Witch Hunt': 'Elektrisierende Hexenjagd',
+        'Electron Stream': 'Elektronen-Strom',
+        'Electrope Edge': 'Elektrob-Aufreihung',
+        'Electrope Transplant': 'Elektrob-Umsetzung',
+        'Flame Slash': 'Feuerschnitt',
+        'Forked Fissures': 'Blitzstrom',
+        'Forked Lightning': 'Gabelblitz',
+        'Four Star': 'Vier Sterne',
+        'Fulminous Field': 'Blitzfeld',
+        'Impact': 'Impakt',
+        'Ion Cluster': 'Ionen-Ansammlung',
+        'Laceration': 'Zerreißen',
+        'Left Roll': 'Linke Walze',
+        'Lightning Cage': 'Blitzkäfig',
+        'Lightning Vortex': 'Donnerkugel',
+        'Midnight Sabbath': 'Mitternachtssabbat',
+        'Mustard Bomb': 'Senfbombe',
+        'Narrowing Witch Hunt': 'Ringförmige Hexenjagd',
+        'Raining Swords': 'Klingenregen',
+        'Right Roll': 'Rechte Walze',
+        'Sidewise Spark': 'Seitlicher Funken',
+        'Soulshock': 'Seelenschock',
+        'Stampeding Thunder': 'Stampfender Kanonenschlag',
+        'Sunrise Sabbath': 'Morgensonnensabbat',
+        'Switch of Tides': 'Schwanzplatscher',
+        'Sword Quiver': 'Klingentanz',
+        'Tail Thrust': 'Schwanzstoß',
+        'Thundering': 'Donnerring',
+        'Twilight Sabbath': 'Zwielichtssabbat',
+        'Wicked Blaze': 'Tosende Flammen',
+        'Wicked Bolt': 'Tosender Blitz',
+        'Wicked Fire': 'Tosendes Feuer',
+        'Wicked Flare': 'Tosende Flare',
+        'Wicked Jolt': 'Tosender Stoß',
+        'Wicked Spark': 'Tosender Funken',
+        'Wicked Special': 'Donnerknall',
+        'Wicked Thunder': 'Tosender Donner',
+        'Widening Witch Hunt': 'Runde Hexenjagd',
+        'Witchgleam': 'Knisternder Funken',
+        'Wrath of Zeus': 'Zorn des Zeus',
+        '\\(debuffs resolve\\)': '(Debuffs spielen)',
+        '\\(debuffs\\)': '(Debuffs)',
+        '\\(enrage\\)': '(Finalangriff)',
+        '\\(first mines hit\\)': '(erster Minen Treffer)',
+        '\\(first set\\)': '(erstes Set)',
+        '\\(first sparks detonate\\)': '(erste Funken explodiert)',
+        '\\(first towers/cannons resolve\\)': '(ersten Turm/Kanone spielen)',
+        '\\(floor no more\\)': '(Boden verschwindet)',
+        '\\(fourth set\\)': '(viertes Set)',
+        '\\(mines\\)': '(Minen)',
+        '\\(players\\)': '(Spieler)',
+        '\\(puddles drop\\)': '(Flächen kommen)',
+        '\\(second hit\\)': '(zweiter Treffer)',
+        '\\(second mines hit\\)': '(zweiter Minen Treffer)',
+        '\\(second set\\)': '(zweites Set)',
+        '\\(second sparks detonate\\)': '(zweiter Funken explodiert)',
+        '\\(second towers/cannons resolve\\)': '(zweiten Turm/Kanone spielen)',
+        '\\(spread \\+ tethers\\)': '(verteilen + Verbindungen)',
+        '\\(third mines hit\\)': '(dritte Minen Treffer)',
+        '\\(third set\\)': '(drittes Set)',
+      },
+    },
+    {
+      'locale': 'fr',
+      'missingTranslations': true,
+      'replaceSync': {
+        'Electromine': 'électromine',
+        'Wicked Replica': 'copie de Wicked Thunder',
+        'Wicked Thunder': 'Wicked Thunder',
+      },
+      'replaceText': {
+        '(?<! )Spark': 'Étincelle',
+        '(?<! )Witch Hunt': 'Piqué fulgurant',
+        'Azure Thunder': 'Foudre azur',
+        'Bewitching Flight': 'Vol enchanteur',
+        'Burst': 'Explosion',
+        'Cannonbolt': 'Canon-éclair',
+        'Chain Lightning': 'Chaîne d\'éclairs',
+        'Conduction Point': 'Pointe foudroyante',
+        'Cross Tail Switch': 'Empalement tentaculaire',
+        'Eight Star': 'Huit étoiles',
+        'Electrifying Witch Hunt': 'Piqué supra-fulgurant',
+        'Electron Stream': 'Courant d\'électrons',
+        'Electrope Edge': 'Élévation d\'électrope',
+        'Electrope Transplant': 'Transplantation d\'électrope',
+        'Flame Slash': 'Tranchant enflammé',
+        'Forked Fissures': 'Flux foudroyant',
+        'Forked Lightning': 'Éclair divergent',
+        'Four Star': 'Quatre étoiles',
+        'Fulminous Field': 'Champ d\'éclairs',
+        'Impact': 'Impact',
+        'Ion Cluster': 'Accumulation d\'ions',
+        'Laceration': 'Lacération',
+        'Lightning Cage': 'Cage d\'éclairs',
+        'Lightning Vortex': 'Vortex foudroyant',
+        'Midnight Sabbath': 'Diablerie obscure - Minuit',
+        'Mustard Bomb': 'Bombe sulfurée',
+        'Narrowing Witch Hunt': 'Piqué fulgurant condensé',
+        'Raining Swords': 'Pluie d\'épées',
+        'Sidewise Spark': 'Éclair latéral',
+        'Soulshock': 'Choc d\'âme',
+        'Stampeding Thunder': 'Tonnerre déferlant',
+        'Sunrise Sabbath': 'Diablerie obscure - Aurore',
+        'Switch of Tides': 'Changement de marées',
+        'Sword Quiver': 'Épée dansante',
+        'Tail Thrust': 'Percée tentaculaire',
+        'Thundering': 'Anneau foudroyant',
+        'Twilight Sabbath': 'Diablerie obscure - Crépuscule',
+        'Wicked Blaze': 'Embrasement vicieux',
+        'Wicked Bolt': 'Fulguration vicieuse',
+        'Wicked Fire': 'Feu vicieux',
+        'Wicked Flare': 'Brasier vicieux',
+        'Wicked Jolt': 'Électrochoc vicieux',
+        'Wicked Spark': 'Étincelle vicieuse',
+        'Wicked Special': 'Spéciale vicieuse',
+        'Wicked Thunder': 'Wicked Thunder',
+        'Widening Witch Hunt': 'Piqué fulgurant élargi',
+        'Witchgleam': 'Rayon éclatant',
+        'Wrath of Zeus': 'Colère de Zeus',
+      },
+    },
+    {
+      'locale': 'ja',
+      'missingTranslations': true,
+      'replaceSync': {
+        'Electromine': 'エレクトリックマイン',
+        'Wicked Replica': 'ウィケッドサンダーの幻影',
+        'Wicked Thunder': 'ウィケッドサンダー',
+      },
+      'replaceText': {
+        '(?<! )Spark': 'スパーク',
+        '(?<! )Witch Hunt': 'ウィッチハント',
+        'Azure Thunder': 'アズールサンダー',
+        'Bewitching Flight': 'フライングウィッチ',
+        'Burst': '爆発',
+        'Cannonbolt': 'キャノンボルト',
+        'Chain Lightning': 'チェインライトニング',
+        'Conduction Point': 'ライトニングポイント',
+        'Cross Tail Switch': 'クロステイル・スペシャル',
+        'Eight Star': 'エイトスターズ',
+        'Electrifying Witch Hunt': 'ライトニング・ウィッチハント',
+        'Electron Stream': 'エレクトロンストリーム',
+        'Electrope Edge': 'エレクトロープ展開',
+        'Electrope Transplant': 'エレクトロープ移植',
+        'Flame Slash': '火炎斬り',
+        'Forked Fissures': 'ライトニングカレント',
+        'Forked Lightning': 'フォークライトニング',
+        'Four Star': 'フォースターズ',
+        'Fulminous Field': 'ライトニングフィールド',
+        'Impact': '衝撃',
+        'Ion Cluster': 'イオンクラスター',
+        'Laceration': '斬撃',
+        'Lightning Cage': 'ライトニングケージ',
+        'Lightning Vortex': 'サークルサンダー',
+        'Midnight Sabbath': 'ブラックサバト【夜半】',
+        'Mustard Bomb': 'マスタードボム',
+        'Narrowing Witch Hunt': '輪円式ウィッチハント',
+        'Raining Swords': '剣の雨',
+        'Sidewise Spark': 'サイドスパーク',
+        'Soulshock': 'ソウルショック',
+        'Stampeding Thunder': 'カノンスタンピード',
+        'Sunrise Sabbath': 'ブラックサバト【日出】',
+        'Switch of Tides': 'テイルスプラッシュ',
+        'Sword Quiver': '剣の舞',
+        'Tail Thrust': 'テイルスラスト',
+        'Thundering': 'リングサンダー',
+        'Twilight Sabbath': 'ブラックサバト【日没】',
+        'Wicked Blaze': 'ウィケッドブレイズ',
+        'Wicked Bolt': 'ウィケッドボルト',
+        'Wicked Fire': 'ウィケッドファイア',
+        'Wicked Flare': 'ウィケッドフレア',
+        'Wicked Jolt': 'ウィケッドジョルト',
+        'Wicked Spark': 'ウィケッドスパーク',
+        'Wicked Special': 'ウィケッドスペシャル',
+        'Wicked Thunder': 'ウィケッドサンダー',
+        'Widening Witch Hunt': '円輪式ウィッチハント',
+        'Witchgleam': 'シャインスパーク',
+        'Wrath of Zeus': 'ラス・オブ・ゼウス',
+      },
     },
   ],
 });
