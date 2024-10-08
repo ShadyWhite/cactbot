@@ -101,20 +101,20 @@ const witchHuntAlertOutputStrings = {
 };
 const tailThrustOutputStrings = {
   iceLeft: {
-    en: 'Double Knockback (<== Start on Left)',
-    de: 'Doppel-Rückstoß (<== Starte Links)',
-    fr: 'Double poussée (<== Démarrez à gauche)',
-    ja: '2連続ノックバック (<== 左から開始)',
-    cn: '两次击退 (<== 左边开始)',
-    ko: '넉백 2번 (<== 왼쪽에서 시작)',
+    en: '<== (Start on Left) Double Knockback',
+    de: '<== (Starte Links) Doppel-Rückstoß',
+    fr: '<== (Démarrez à gauche) Double poussée',
+    ja: '<== (左から開始) 2連続ノックバック',
+    cn: '<== (左边开始) 两次击退',
+    ko: '<== (왼쪽에서 시작) 넉백 2번',
   },
   iceRight: {
-    en: 'Double Knockback (Start on Right ==>)',
-    de: 'Doppel-Rückstoß (Starte Rechts ==>)',
-    fr: 'Double poussée (Démarrez à droite ==>)',
-    ja: '2連続ノックバック (右から開始 ==>)',
-    cn: '两次击退 (右边开始 ==>)',
-    ko: '넉백 2번 (오른쪽에서 시작 ==>)',
+    en: '(Start on Right) Double Knockback ==>',
+    de: '(Starte Rechts) Doppel-Rückstoß ==>',
+    fr: '(Démarrez à droite) Double poussée ==>',
+    ja: '(右から開始) 2連続ノックバック ==>',
+    cn: '(右边开始) 两次击退 ==>',
+    ko: '(오른쪽에서 시작) 넉백 2번 ==>',
   },
   fireLeft: {
     en: 'Fire - Start Front + Right ==>',
@@ -818,13 +818,13 @@ Options.Triggers.push({
       id: 'R4S Left Roll',
       type: 'Ability',
       netRegex: { id: '95D3', source: 'Wicked Thunder', capture: false },
-      response: Responses.goLeft(),
+      response: Responses.goWest(),
     },
     {
       id: 'R4S Right Roll',
       type: 'Ability',
       netRegex: { id: '95D2', source: 'Wicked Thunder', capture: false },
-      response: Responses.goRight(),
+      response: Responses.goEast(),
     },
     {
       id: 'R4S Electron Stream Debuff',
@@ -1141,10 +1141,16 @@ Options.Triggers.push({
       delaySeconds: 0.2,
       suppressSeconds: 1,
       infoText: (data, _matches, output) => {
-        if (data.mustardBombTargets.includes(data.me))
-          return output.passDebuff();
-        else if (!data.kindlingCauldronTargets.includes(data.me))
+        if (data.mustardBombTargets.includes(data.me)) {
+          const safePlayers = data.party.partyNames.filter((m) =>
+            !data.kindlingCauldronTargets.includes(m) &&
+            !data.mustardBombTargets.includes(m)
+          );
+          const toStr = safePlayers.map((m) => data.party.member(m).nick).join(', ');
+          return output.passDebuff({ to: toStr });
+        } else if (!data.kindlingCauldronTargets.includes(data.me)) {
           return output.getDebuff();
+        }
       },
       run: (data) => {
         data.mustardBombTargets = [];
@@ -1152,12 +1158,12 @@ Options.Triggers.push({
       },
       outputStrings: {
         passDebuff: {
-          en: 'Pass Debuff',
-          de: 'Debuff übergeben',
-          fr: 'Donner le debuff',
-          ja: 'デバフを渡して',
-          cn: '传火',
-          ko: '디버프 전달',
+          en: 'Pass Debuff (${to})',
+          de: 'Debuff übergeben (${to})',
+          fr: 'Donner le debuff (${to})',
+          ja: 'デバフを渡して (${to})',
+          cn: '传火 (${to})',
+          ko: '디버프 전달 (${to})',
         },
         getDebuff: {
           en: 'Get Debuff',
