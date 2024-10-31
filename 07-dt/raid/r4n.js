@@ -152,24 +152,18 @@ Options.Triggers.push({
     },
     {
       id: 'R4N Clone Cleave Collector',
-      type: 'CombatantMemory',
-      // Filter to only enemy actors for performance
-      // TODO: Change this to an ActorControlExtra line if OverlayPlugin adds SetModelState as a valid category
-      netRegex: {
-        id: '4[0-9A-Fa-f]{7}',
-        pair: [{ key: 'WeaponId', value: ['33', '121'] }],
-        capture: true,
-      },
+      type: 'ActorControlExtra',
+      // category: 0197 - PlayActionTimeline
+      // param1: 11D6 - right cleave
+      // param1: 11D8 - left cleave
+      netRegex: { category: '0197', param1: ['11D6', '11D8'] },
       condition: (data, matches) => {
         const actorID = parseInt(matches.id, 16);
         const initActorData = data.actors.find((actor) => actor.ID === actorID);
         if (!initActorData)
           return false;
-        const weaponId = matches.pairWeaponId;
-        if (weaponId === undefined)
-          return false;
-        const cleaveDir = weaponId === '121' ? 'left' : 'right';
-        // Sometimes we get extra lines with weaponId changed. Update an existing actor if it's already in the array.
+        const cleaveDir = matches.param1 === '11D8' ? 'left' : 'right';
+        // Check for an existing entry in case we get extra lines
         const existingCleave = data.storedCleaves.find((cleave) => cleave.id === actorID);
         if (existingCleave !== undefined) {
           existingCleave.dir = cleaveDir;
@@ -385,7 +379,7 @@ Options.Triggers.push({
           de: 'Ost-Offset sicher',
           fr: 'Offset Est sûr',
           ja: '最東端の床へ',
-          cn: '右(东)侧 安全',
+          cn: '偏右侧安全',
           ko: '동쪽 끝 안전',
         },
       },
@@ -403,7 +397,7 @@ Options.Triggers.push({
           de: 'Süd-Offset sicher',
           fr: 'Offset Sud sûr',
           ja: '最南端の床へ',
-          cn: '下(南)侧 安全',
+          cn: '偏下侧安全',
           ko: '남쪽 끝 안전',
         },
       },
@@ -421,7 +415,7 @@ Options.Triggers.push({
           de: 'West-Offset sicher',
           fr: 'Offset Ouest sûr',
           ja: '最西端の床へ',
-          cn: '左(西)侧 安全',
+          cn: '偏左侧安全',
           ko: '서쪽 끝 안전',
         },
       },
@@ -439,7 +433,7 @@ Options.Triggers.push({
           de: 'Nord-Offset sicher',
           fr: 'Offset Nord sûr',
           ja: '最北端の床へ',
-          cn: '上(北)侧 安全',
+          cn: '偏上侧安全',
           ko: '북쪽 끝 안전',
         },
       },
