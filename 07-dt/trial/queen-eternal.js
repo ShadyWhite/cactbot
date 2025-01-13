@@ -68,6 +68,8 @@ Options.Triggers.push({
       outputStrings: {
         repeatedAOE: {
           en: 'Continuous light AoE',
+          cn: '连续小AoE',
+          ko: '지속적인 약한 전체 공격',
         },
       },
     },
@@ -118,6 +120,8 @@ Options.Triggers.push({
       outputStrings: {
         regaliaYou: {
           en: 'Laser tether on YOU',
+          cn: '激光连线点名',
+          ko: '레이저 선 대상자',
         },
       },
     },
@@ -145,6 +149,8 @@ Options.Triggers.push({
       outputStrings: {
         floating: {
           en: 'Gravitation -- Levitating',
+          cn: '重力 -- 上浮',
+          ko: '중력 -- 상승',
         },
       },
     },
@@ -161,6 +167,8 @@ Options.Triggers.push({
       outputStrings: {
         falling: {
           en: 'Gravitation -- Falling',
+          cn: '重力 -- 下降',
+          ko: '중력 -- 하강',
         },
       },
     },
@@ -177,6 +185,8 @@ Options.Triggers.push({
       outputStrings: {
         floating: {
           en: 'Gravitation -- Levitating',
+          cn: '重力 -- 上浮',
+          ko: '중력 -- 상승',
         },
       },
     },
@@ -197,9 +207,13 @@ Options.Triggers.push({
       outputStrings: {
         fallCastle: {
           en: 'In front of ground windows',
+          cn: '正对下层空洞',
+          ko: '아래쪽 뚫린 곳',
         },
         floatCastle: {
           en: 'In front of middle windows',
+          cn: '正对上层空洞',
+          ko: '가운데층 뚫린 곳',
         },
       },
     },
@@ -211,6 +225,8 @@ Options.Triggers.push({
       outputStrings: {
         getInDonut: {
           en: 'Get in robot circle',
+          cn: '小月环',
+          ko: '로봇 원 안으로',
         },
       },
     },
@@ -238,6 +254,8 @@ Options.Triggers.push({
       outputStrings: {
         gazeLater: {
           en: 'Gaze on you soon',
+          cn: '石化眼点名',
+          ko: '곧 시선징 대상자',
         },
       },
     },
@@ -259,9 +277,13 @@ Options.Triggers.push({
       outputStrings: {
         shriekYou: {
           en: 'Gaze -- look away from ${otherTarget}',
+          cn: '石化眼 -- 背对 ${otherTarget}',
+          ko: '시선징 -- ${otherTarget}에게서 뒤돌기',
         },
         shriekOthers: {
           en: 'Look away from ${comboTargets}',
+          cn: '背对 ${comboTargets}',
+          ko: '${comboTargets}에게서 뒤돌기',
         },
       },
     },
@@ -274,6 +296,8 @@ Options.Triggers.push({
       outputStrings: {
         bombLater: {
           en: 'Acceleration Bomb soon',
+          cn: '稍后 加速度炸弹',
+          ko: '곧 가속도 폭탄',
         },
       },
     },
@@ -300,6 +324,8 @@ Options.Triggers.push({
       outputStrings: {
         flareMarker: {
           en: 'Flare on YOU',
+          cn: '核爆点名',
+          ko: '플레어 대상자',
         },
       },
     },
@@ -325,6 +351,8 @@ Options.Triggers.push({
       outputStrings: {
         fiveAOE: {
           en: '5x AoEs',
+          cn: 'AoE (5次)',
+          ko: '전체공격 (5x)',
         },
       },
     },
