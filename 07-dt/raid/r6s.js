@@ -1,3 +1,36 @@
+// I lack the footage to confirm these, but they should be correct.
+// There are second set of 24 locations immediately before this which correspond to
+// the "meteor falling" animation
+const towerMapEffectMapping = {
+  '49': 'dirNW',
+  '4A': 'dirNW',
+  '4B': 'dirNW',
+  '4C': 'dirNW',
+  '4D': 'dirNW',
+  '4E': 'dirNW',
+  '4F': 'dirNW',
+  '50': 'dirNW',
+  '51': 'dirNE',
+  '52': 'dirNE',
+  '53': 'dirNE',
+  '54': 'dirNE',
+  '55': 'dirNE',
+  '56': 'dirNE',
+  '57': 'dirNE',
+  '58': 'dirNE',
+  '59': 'dirS',
+  '5A': 'dirS',
+  '5B': 'dirS',
+  '5C': 'dirS',
+  '5D': 'dirS',
+  '5E': 'dirS',
+  '5F': 'dirS',
+  '60': 'dirS',
+};
+const towerFlags = {
+  show: '00020001',
+  hide: '00080004',
+};
 const doubleStyleMap = {
   '93CA': { red: 'marl', blue: 'succ', count: 2 },
   '9408': { red: 'succ', blue: 'marl', count: 2 },
@@ -55,6 +88,9 @@ Options.Triggers.push({
   initData: () => ({
     actorSetPosTracker: {},
     tetherTracker: {},
+    cloudExplosionCount: 0,
+    firstTowersGone: false,
+    secondTowers: {},
   }),
   triggers: [
     {
@@ -103,6 +139,7 @@ Options.Triggers.push({
       outputStrings: {
         avoidCleave: {
           en: 'Be on boss hitbox (avoid tank cleaves)',
+          de: 'Geh auf den Kreis vom Boss (vermeide Tank Cleaves)',
           fr: 'Sur la hitbox (évitez les tanks cleaves)',
           ja: 'ボス背面のサークル上に',
           cn: '站在目标圈上 (远离坦克死刑)',
@@ -110,6 +147,7 @@ Options.Triggers.push({
         },
         warmCleave: {
           en: 'Tank cleave on YOU (${dir} => get hit by Red)',
+          de: 'Tank Cleave auf DIR (${dir} => von Rot treffen lassen)',
           fr: 'Tank cleave sur VOUS (${dir} => prenez le Rouge)',
           ja: 'タンク攻撃 (${dir} => 赤に当たる)',
           cn: '坦克死刑 (${dir} => 吃红色)',
@@ -117,6 +155,7 @@ Options.Triggers.push({
         },
         coolCleave: {
           en: 'Tank cleave on YOU (${dir} => get hit by Blue)',
+          de: 'Tank Cleave auf DIR (${dir} => von Blau treffen lassen)',
           fr: 'Tank cleave sur VOUS (${dir} => prenez le Bleu)',
           ja: 'タンク攻撃 (${dir} => 青に当たる)',
           cn: '坦克死刑 (${dir} => 吃蓝色)',
@@ -258,6 +297,7 @@ Options.Triggers.push({
       outputStrings: {
         defamationLater: {
           en: 'Defamation on YOU (for later)',
+          de: 'Große AoE auf DIR (für später)',
           fr: 'Diffamation sur VOUS (pour après)',
           ja: 'あとで巨大な爆発',
           cn: '稍后放大圈',
@@ -291,6 +331,7 @@ Options.Triggers.push({
       outputStrings: {
         bomb: {
           en: 'Drop bomb in quicksand',
+          de: 'Lege Bombe im Treibsand',
           fr: 'Déposez la bombe dans le sable mouvant',
           ja: '爆弾を流砂に捨てる',
           cn: '流沙里放置炸弹',
@@ -298,6 +339,7 @@ Options.Triggers.push({
         },
         wingedBomb: {
           en: 'Aim bomb towards quicksand',
+          de: 'Ziele mit der Bombe auf den Treibsand',
           fr: 'Dirigez la bombe vers le sable mouvant',
           ja: '爆弾を流砂に向ける',
           cn: '面向流沙放置飞弹',
@@ -314,6 +356,7 @@ Options.Triggers.push({
       outputStrings: {
         text: {
           en: 'Jabberwock on YOU',
+          de: 'Brabbelback auf DIR',
           ja: 'ジャバウォック処理',
           cn: '马止步点名',
           ko: '재버워크 대상자',
@@ -334,6 +377,7 @@ Options.Triggers.push({
       outputStrings: {
         text: {
           en: 'Avoid arrow lines',
+          de: 'Vermeide Pfeil-Linien',
           fr: 'Évitez les lignes de flèches',
           ja: '矢印線を避ける',
           cn: '躲避场边箭直线',
@@ -351,6 +395,7 @@ Options.Triggers.push({
       outputStrings: {
         fire: {
           en: 'Healer groups in water, avoid arrow lines',
+          de: 'Heiler Gruppen im Wasser, vermeide Pfeil-Linien',
           fr: 'Groupes sur les heals dans l\'eau, évitez les lignes de flèches',
           ja: 'ヒラ組で水へ、矢印線を避ける',
           cn: '水中双奶分组分摊 + 躲避场边箭直线',
@@ -358,6 +403,7 @@ Options.Triggers.push({
         },
         thunder: {
           en: 'Spread out of water, avoid arrow lines',
+          de: 'Außerhalb des Wassers verteilen, vermeide Pfeil-Linien',
           fr: 'Dipersion hors de l\'eau, évitez les lignes de flèches',
           ja: '水を避けて散開、矢印線を避ける',
           cn: '陆地分散 + 躲避场边箭直线',
@@ -391,6 +437,7 @@ Options.Triggers.push({
       outputStrings: {
         stackOnYou: {
           en: 'Stack on YOU x5',
+          de: 'Sammeln auf DIR x5',
           fr: 'Package sur VOUS x5',
           ja: '5回連続頭割り',
           cn: '分摊五连点名',
@@ -398,6 +445,7 @@ Options.Triggers.push({
         },
         stackOn: {
           en: 'Stack on ${target} x5',
+          de: 'Sammeln auf ${target} x5',
           fr: 'Package sur ${target} x5',
           ja: '${target} に 5回 連続頭割り',
           cn: '分摊五连点 ${target} ',
@@ -494,6 +542,184 @@ Options.Triggers.push({
         },
       },
     },
+    {
+      id: 'R6S Tempest Piece Spawn Collector',
+      type: 'AddedCombatant',
+      netRegex: { npcNameId: '13827', capture: true },
+      condition: (data) => data.cloudId === undefined,
+      preRun: (data, matches) => {
+        data.cloudId = matches.id;
+        const cloudDir =
+          Directions.output8Dir[Directions.addedCombatantPosTo8Dir(matches, 100, 100)];
+        switch (cloudDir) {
+          case 'dirNE':
+          case 'dirNW':
+          case 'dirS':
+            data.cloudPos = cloudDir;
+            break;
+          default:
+            console.log(
+              `R6S Tempest Piece Spawn Collector - Invalid cloud spawn direction ${cloudDir}`,
+            );
+            return;
+        }
+        const cloudX = parseFloat(matches.x);
+        const cloudY = parseFloat(matches.y);
+        data.cloudLastAngle = Math.atan2(cloudX - 100, cloudY - 100);
+        // For the initial spawn, the actor moves in place which causes a false positive firing
+        // of the detection trigger. Avoid it by setting new angle to last angle
+        data.cloudNewAngle = data.cloudLastAngle;
+      },
+      infoText: (data, _matches, output) =>
+        output.spawn({ dir: output[data.cloudPos ?? 'unknown']() }),
+      outputStrings: {
+        ...Directions.outputStrings8Dir,
+        spawn: {
+          en: 'Cloud spawning ${dir}',
+        },
+      },
+    },
+    {
+      id: 'R6S Tempest Piece Rotation Detector',
+      type: 'ActorMove',
+      netRegex: { capture: true },
+      condition: (data, matches) => {
+        if (matches.id !== data.cloudId)
+          return false;
+        return data.cloudId !== undefined && data.cloudLastAngle !== undefined &&
+          data.cloudNewAngle === undefined && data.cloudExplosionCount < 5;
+      },
+      preRun: (data, matches) => {
+        const cloudX = parseFloat(matches.x);
+        const cloudY = parseFloat(matches.y);
+        data.cloudNewAngle = Math.atan2(cloudX - 100, cloudY - 100);
+      },
+      infoText: (data, _matches, output) => {
+        const lastAngle = data.cloudLastAngle;
+        const newAngle = data.cloudNewAngle;
+        if (lastAngle === undefined || newAngle === undefined)
+          throw new UnreachableCode();
+        const cwRotation = (Math.PI + newAngle) < (Math.PI + lastAngle);
+        if (data.cloudPos === 'dirNE') {
+          data.cloudPos = cwRotation ? 'dirS' : 'dirNW';
+        } else if (data.cloudPos === 'dirNW') {
+          data.cloudPos = cwRotation ? 'dirNE' : 'dirS';
+        } else {
+          data.cloudPos = cwRotation ? 'dirNW' : 'dirNE';
+        }
+        return output.text({
+          rot: output[cwRotation ? 'cw' : 'ccw'](),
+          dir: output[data.cloudPos ?? 'unknown'](),
+        });
+      },
+      outputStrings: {
+        ...Directions.outputStrings8Dir,
+        cw: Outputs.clockwise,
+        ccw: Outputs.counterclockwise,
+        text: {
+          en: 'Cloud rotating ${rot} towards ${dir}',
+        },
+      },
+    },
+    {
+      id: 'R6S Tempest Piece Cleanup 1',
+      type: 'StartsUsing',
+      netRegex: { id: 'A69B', capture: true },
+      condition: (data) => {
+        return data.cloudId !== undefined && data.cloudLastAngle !== undefined &&
+          data.cloudNewAngle !== undefined;
+      },
+      run: (data, matches) => {
+        const cloudX = parseFloat(matches.x);
+        const cloudY = parseFloat(matches.y);
+        data.cloudLastAngle = Math.atan2(cloudX - 100, cloudY - 100);
+        delete data.cloudNewAngle;
+        data.cloudExplosionCount++;
+      },
+    },
+    {
+      id: 'R6S Tempest Piece Cleanup 2',
+      type: 'RemovedCombatant',
+      netRegex: { npcNameId: '13827', capture: true },
+      condition: (data, matches) => {
+        if (data.cloudId === undefined)
+          return false;
+        if (data.cloudId !== matches.id)
+          return false;
+        return true;
+      },
+      run: (data) => {
+        delete data.cloudId;
+        delete data.cloudPos;
+        delete data.cloudLastAngle;
+        delete data.cloudNewAngle;
+      },
+    },
+    {
+      id: 'R6S First Towers Detector',
+      type: 'MapEffect',
+      netRegex: {
+        location: Object.keys(towerMapEffectMapping),
+        flags: towerFlags.hide,
+        capture: false,
+      },
+      condition: (data) => data.firstTowersGone === false,
+      run: (data) => data.firstTowersGone = true,
+    },
+    {
+      id: 'R6S Second Towers Collector',
+      type: 'MapEffect',
+      netRegex: {
+        location: Object.keys(towerMapEffectMapping),
+        flags: towerFlags.show,
+        capture: true,
+      },
+      condition: (data) => data.firstTowersGone === true,
+      preRun: (data, matches) => {
+        const dir = towerMapEffectMapping[matches.location];
+        if (dir === undefined) {
+          console.log(
+            `R6S Second Towers Collector - Invalid location somehow, ${matches.location}`,
+          );
+          return;
+        }
+        if (dir !== 'dirNW' && dir !== 'dirNE' && dir !== 'dirS') {
+          console.log(
+            `R6S Second Towers Collector - Invalid location mapping somehow, ${matches.location}`,
+          );
+          return;
+        }
+        data.secondTowers[dir] = (data.secondTowers[dir] ?? 0) + 1;
+      },
+      infoText: (data, _matches, output) => {
+        const nwCount = data.secondTowers.dirNW ?? 0;
+        const neCount = data.secondTowers.dirNE ?? 0;
+        const sCount = data.secondTowers.dirS ?? 0;
+        if (nwCount + neCount + sCount < 8)
+          return;
+        if (sCount === 8)
+          return output.eightSouth();
+        if (nwCount === 4)
+          return output.fourNW();
+        if (neCount === 4)
+          return output.fourNE();
+        return output.unknown();
+      },
+      outputStrings: {
+        unknown: Outputs.unknown,
+        // These outputStrings values are written this way to allow users to replace them
+        // with "all south", "clockwise", "counterclockwise" to match the common strat
+        eightSouth: {
+          en: '8 Towers S',
+        },
+        fourNW: {
+          en: '4 Towers NW',
+        },
+        fourNE: {
+          en: '4 Towers NE',
+        },
+      },
+    },
   ],
   timelineReplace: [
     {
@@ -507,11 +733,11 @@ Options.Triggers.push({
       'replaceText': {
         '\\(cast\\)': '(wirken)',
         '\\(snapshot\\)': '(Speichern)',
-        '--Yan targetable--': '--Putschi anvisierbar--',
+        '--2x Feather Ray targetable--': '--2x Federrochen anvisierbar--',
         '--2x Mu targetable--': '--2x Mu anvisierbar--',
         '--Gimme Cat targetable--': '--Bettelcat anvisierbar--',
-        '--2x Feather Ray targetable--': '--2x Federrochen anvisierbar--',
         '--Jabberwock targetable--': '--Brabbelback anvisierbar--',
+        '--Yan targetable--': '--Putschi anvisierbar--',
         'Artistic Anarchy': 'Artistische Anarchie',
         'Bad Breath': 'Schlechter Atem',
         'Brûlée': 'Wärmeentladung',
