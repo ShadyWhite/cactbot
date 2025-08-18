@@ -75,6 +75,7 @@ Options.Triggers.push({
       outputStrings: {
         baitHand: {
           en: 'Bait Hand',
+          cn: '引导手',
         },
       },
     },
@@ -93,6 +94,7 @@ Options.Triggers.push({
         west: Outputs.west,
         text: {
           en: '${mid} => ${side}',
+          cn: '${mid} => ${side}',
         },
       },
     },
@@ -109,9 +111,11 @@ Options.Triggers.push({
       outputStrings: {
         lightWest: {
           en: 'Light West => Spread',
+          cn: '光左 => 分散',
         },
         lightEast: {
           en: 'Light East => Spread',
+          cn: '光右 => 分散',
         },
       },
     },
@@ -153,6 +157,7 @@ Options.Triggers.push({
         mid: Outputs.middle,
         stored: {
           en: 'Stored ${dir}',
+          cn: '储存 ${dir}',
         },
       },
     },
@@ -181,6 +186,7 @@ Options.Triggers.push({
         partners: Outputs.stackPartner,
         text: {
           en: '${dir} + ${mech}',
+          cn: '${dir} + ${mech}',
         },
       },
     },
@@ -193,6 +199,7 @@ Options.Triggers.push({
       outputStrings: {
         bait: {
           en: 'Drop hand => Bait hand',
+          cn: '放手 => 引导手',
         },
       },
     },
@@ -211,6 +218,7 @@ Options.Triggers.push({
       outputStrings: {
         bait: {
           en: 'Bait puddles',
+          cn: '引导黄圈',
         },
       },
     },
@@ -224,6 +232,7 @@ Options.Triggers.push({
       outputStrings: {
         bait: {
           en: 'Bait puddles => Intercardinals',
+          cn: '引导黄圈 => 叉字',
         },
       },
     },
@@ -243,6 +252,7 @@ Options.Triggers.push({
         spread: Outputs.spread,
         tower: {
           en: 'Tower',
+          cn: '踩塔',
         },
       },
     },
@@ -265,7 +275,10 @@ Options.Triggers.push({
       condition: Conditions.targetIsYou(),
       infoText: (_data, _matches, output) => output.cleanse(),
       outputStrings: {
-        cleanse: 'Cleanse Slow',
+        cleanse: {
+          en: 'Cleanse Slow',
+          cn: '康复减速',
+        },
       },
     },
     {
@@ -323,15 +336,19 @@ Options.Triggers.push({
         spread: Outputs.spread,
         middle: {
           en: 'Middle Row',
+          cn: '中间行',
         },
         north: {
           en: 'North Row',
+          cn: '第一行',
         },
         south: {
           en: 'South Row',
+          cn: '第三行',
         },
         text: {
           en: '${row} + ${spread}',
+          cn: '${row} + ${spread}',
         },
       },
     },
@@ -344,6 +361,7 @@ Options.Triggers.push({
       outputStrings: {
         bait: {
           en: 'Bait Hand => Dodge',
+          cn: '引导手 => 躲开',
         },
       },
     },
@@ -426,6 +444,7 @@ Options.Triggers.push({
         partners: Outputs.stackPartner,
         text: {
           en: '${dir1} => ${dir2} => ${dir3} => ${dir4} + ${mech}',
+          cn: '${dir1} => ${dir2} => ${dir3} => ${dir4} + ${mech}',
         },
       },
     },
@@ -496,12 +515,15 @@ Options.Triggers.push({
         middle: Outputs.middle,
         delay: {
           en: 'Wait for hand => ${dir}',
+          cn: '等手 => ${dir}',
         },
         lean: {
           en: '${dir}, lean ${to}',
+          cn: '${dir}, 靠 ${to}',
         },
         dodge: {
           en: '${dir} => Dodge Hand',
+          cn: '${dir} => 躲手',
         },
       },
     },
@@ -513,6 +535,7 @@ Options.Triggers.push({
       outputStrings: {
         towerPos: {
           en: 'Preposition for LP towers',
+          cn: '多人塔预站位',
         },
       },
     },
@@ -540,6 +563,7 @@ Options.Triggers.push({
       outputStrings: {
         soakNext: {
           en: 'Soak Next Tower',
+          cn: '踩下一个塔',
         },
         tankBuster: Outputs.tankBuster,
       },
@@ -551,6 +575,120 @@ Options.Triggers.push({
       'replaceText': {
         'Twofold Blight/Fourfold Blight': 'Twofold/Fourfold Blight',
         'The Second Season/The Fourth Season': 'The Second/Fourth Season',
+      },
+    },
+    {
+      'locale': 'de',
+      'missingTranslations': true,
+      'replaceSync': {
+        'Azure Aether': 'azur(?:e|er|es|en) Äther',
+        'Beckoning Hands': 'lockend(?:e|er|es|en) Hand',
+        'Icy Hands': 'eiskalt(?:e|er|es|en) Hand',
+        'Necron': 'Ewig(?:e|er|es|en) Dunkel',
+      },
+      'replaceText': {
+        'Aetherblight': 'Ätherische Verderbnis',
+        'Blue Shockwave': 'Blaue Schockwelle',
+        'Choking Grasp': 'Würgegriff',
+        'Circle of Lives': 'Lebenszirkel',
+        'Cold Grip': 'Dunkelhieb',
+        'Crop Rotation': 'Fruchtfolge der Dunkelheit',
+        'Darkness of Eternity': 'Ewige Dunkelheit',
+        'Existential Dread': 'Existenzielle Angst',
+        'Fear of Death': 'Todesfurcht',
+        'Fourfold Blight': 'Vierfaches Verderben',
+        'Grand Cross': 'Supernova',
+        'Inevitability': 'Unumgänglichkeit',
+        'Mass Macabre': 'Massenfurcht',
+        'Memento Mori': 'Memento Mori',
+        'Muted Struggle': 'Stiller Kampf',
+        'Neutron Ring': 'Neutronenring',
+        'Relentless Reaping': 'Andauernde Labung',
+        'Shock(?!wave)': 'Entladung',
+        '(?<!Blue )Shockwave': 'Schockwelle',
+        'Smite of Gloom': 'Schlag der Schwermut',
+        'Soul Reaping': 'Seelenlabung',
+        'Specter of Death': 'Gesandte des Todes',
+        'The End\'s Embrace': 'Letzte Umarmung',
+        'The Fourth Season': 'Vierte Saison',
+        'The Second Season': 'Zweite Saison',
+        'Twofold Blight': 'Doppeltes Verderben',
+      },
+    },
+    {
+      'locale': 'fr',
+      'missingTranslations': true,
+      'replaceSync': {
+        'Azure Aether': 'sphère d\'énergie bleue',
+        'Beckoning Hands': 'grand attrape-mort',
+        'Icy Hands': 'attrape-mort',
+        'Necron': 'Darkness',
+      },
+      'replaceText': {
+        'Aetherblight': 'Voie bleue',
+        'Blue Shockwave': 'Onde bleue',
+        'Choking Grasp': 'Pression écrasante',
+        'Circle of Lives': 'Sphères d\'énergie bleues',
+        'Cold Grip': 'Fouet létal',
+        'Crop Rotation': 'Rotation des âmes',
+        'Darkness of Eternity': 'Obscurité éternelle',
+        'Existential Dread': 'Jaillissement obscur',
+        'Fear of Death': 'Thanatophobie',
+        'Fourfold Blight': 'Voie bleue quadruplée',
+        'Grand Cross': 'Croix suprême',
+        'Inevitability': 'Déluge de mort',
+        'Mass Macabre': 'Panique collective',
+        'Memento Mori': 'Memento mori',
+        'Muted Struggle': 'Frappe écrasante',
+        'Neutron Ring': 'Anneau de neutrons',
+        'Relentless Reaping': 'Âmes bleues enchaînées',
+        'Shock(?!wave)': 'Décharge électrostatique',
+        '(?<!Blue )Shockwave': 'Onde de choc',
+        'Smite of Gloom': 'Coup des ténèbres',
+        'Soul Reaping': 'Âme bleue',
+        'Specter of Death': 'Agrippe-morts',
+        'The End\'s Embrace': 'Aile guide',
+        'The Fourth Season': 'Motifs bleus quadruplés',
+        'The Second Season': 'Motifs bleus doublés',
+        'Twofold Blight': 'Voie bleue doublée',
+      },
+    },
+    {
+      'locale': 'ja',
+      'missingTranslations': true,
+      'replaceSync': {
+        'Azure Aether': '青の魂塊',
+        'Beckoning Hands': '死に誘う手',
+        'Icy Hands': '死を招く手',
+        'Necron': '永遠の闇',
+      },
+      'replaceText': {
+        'Aetherblight': '青の波動',
+        'Blue Shockwave': '青の衝撃',
+        'Choking Grasp': '圧し潰す',
+        'Circle of Lives': '青の輪波',
+        'Cold Grip': '暗き死の腕',
+        'Crop Rotation': '魂の輪転',
+        'Darkness of Eternity': 'エターナルダークネス',
+        'Existential Dread': '暗気流',
+        'Fear of Death': '死の恐怖',
+        'Fourfold Blight': '青の四重波',
+        'Grand Cross': 'グランドクロス',
+        'Inevitability': '死の氾濫',
+        'Mass Macabre': '集団恐慌',
+        'Memento Mori': 'メメント・モリ',
+        'Muted Struggle': '叩き潰す',
+        'Neutron Ring': 'ニュートンリング',
+        'Relentless Reaping': '連なる青き魂',
+        'Shock(?!wave)': '放電',
+        '(?<!Blue )Shockwave': '衝撃波',
+        'Smite of Gloom': '闇の一撃',
+        'Soul Reaping': '青き魂',
+        'Specter of Death': '闇の巨腕',
+        'The End\'s Embrace': '導きの翼',
+        'The Fourth Season': '青の式波・四重',
+        'The Second Season': '青の式波・二重',
+        'Twofold Blight': '青の二重波',
       },
     },
   ],
