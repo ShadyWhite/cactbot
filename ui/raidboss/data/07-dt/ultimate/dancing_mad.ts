@@ -8607,6 +8607,8 @@ const triggerSet: TriggerSet<Data> = {
         'Future\'s End/Past\'s End': 'Future/Past\'s End',
         'Spelldriver/Spellscatter/Spellwave': 'Spelldriver/scatter/wave',
         'Longitudinal Implosion/Latitudinal Implosion': 'Long/Lat Implosion',
+        'Fire III/Blizzard III/Thunder III': 'Fire/Blizzard/Thunder III',
+        'Forsaken Ground/Forsaken Bonds': 'Forsaken Ground/Bonds',
       },
     },
     {
@@ -8954,6 +8956,7 @@ const triggerSet: TriggerSet<Data> = {
     },
     {
       'locale': 'cn',
+      'missingTranslations': true,
       'replaceSync': {
         'Black Hole': '黑洞',
         'Chaos': '卡奥斯',
